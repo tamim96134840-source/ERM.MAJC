@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Book Store – School ERP</title>
+  <link rel="stylesheet" href="style.css">
+  <style id="page-loader-style">
+    #page-loader {
+      position: fixed; inset: 0; background: #1a2744;
+      display: flex; align-items: center; justify-content: center;
+      z-index: 99999; flex-direction: column; gap: 16px;
+      transition: opacity 0.3s ease;
+    }
+    #page-loader .pl-spin {
+      width: 44px; height: 44px;
+      border: 4px solid rgba(255,255,255,0.2);
+      border-top-color: #f5a623;
+      border-radius: 50%;
+      animation: pl-spin 0.7s linear infinite;
+    }
+    #page-loader .pl-text {
+      color: rgba(255,255,255,0.6);
+      font-family: 'Outfit', system-ui, sans-serif;
+      font-size: 0.85rem; font-weight: 600;
+    }
+    @keyframes pl-spin { to { transform: rotate(360deg); } }
+  </style>
+
+  <style id="fallback-css">
+    /* Emergency fallback — ensures pages render if style.css path fails */
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap');
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--primary:#1a2744;--accent:#f5a623;--accent-2:#27ae60;--accent-3:#e74c3c;--surface:#f0f4ff;--surface-2:#e8edf8;--bg:#f5f7ff;--border:#dde3f0;--border-2:#c8d0e8;--text:#1a2744;--text-muted:#6b7a99;--card:#fff;--sidebar-w:260px;--topbar-h:64px;--shadow:0 2px 12px rgba(26,39,68,.08);--shadow-md:0 4px 20px rgba(26,39,68,.11);--shadow-lg:0 8px 32px rgba(26,39,68,.15);--radius:14px;--radius-sm:9px;--transition:all .18s ease}
+    html{-webkit-text-size-adjust:100%}
+    body{font-family:'Outfit',system-ui,sans-serif;background:var(--bg);color:var(--text);font-size:15px;min-height:100vh;overflow-x:hidden}
+    img{max-width:100%;display:block}
+    a{color:var(--primary);text-decoration:none}
+    button{font-family:inherit}
+    input,select,textarea{font-family:inherit;outline:none}
+    /* Layout */
+    .app-layout{display:flex;min-height:100vh}
+    .sidebar{position:fixed;left:0;top:0;width:var(--sidebar-w);height:100vh;background:linear-gradient(180deg,#1a2744,#0f1829);color:#fff;display:flex;flex-direction:column;z-index:1000;overflow-y:auto;transition:transform .28s ease;box-shadow:4px 0 24px rgba(0,0,0,.18)}
+    .main-content{flex:1;margin-left:var(--sidebar-w);min-height:100vh;display:flex;flex-direction:column;transition:margin-left .28s ease}
+    .topbar{position:sticky;top:0;height:var(--topbar-h);background:rgba(255,255,255,.96);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;padding:0 24px;z-index:900;box-shadow:0 2px 10px rgba(26,39,68,.06)}
+    .page-content{flex:1;padding:24px;max-width:1400px;width:100%}
+    .sidebar-header{display:flex;align-items:center;gap:12px;padding:20px 16px 16px;border-bottom:1px solid rgba(255,255,255,.08);flex-shrink:0}
+    .sidebar-logo{width:48px;height:48px;object-fit:contain;border-radius:12px;background:rgba(255,255,255,.1);padding:4px;flex-shrink:0}
+    .sidebar-school-name{font-size:.82rem;font-weight:800;line-height:1.3;color:#fff}
+    .sidebar-school-tagline{font-size:.7rem;color:rgba(255,255,255,.5);margin-top:2px;font-style:italic}
+    .sidebar-nav{flex:1;padding:12px 10px;display:flex;flex-direction:column;gap:2px}
+    .nav-section-label{font-size:.66rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.35);padding:14px 8px 6px}
+    .nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:9px;color:rgba(255,255,255,.72);font-size:.88rem;font-weight:500;cursor:pointer;transition:var(--transition);text-decoration:none;white-space:nowrap}
+    .nav-item:hover{background:rgba(255,255,255,.1);color:#fff}
+    .nav-item.active{background:rgba(245,166,35,.18);color:var(--accent);font-weight:700}
+    .nav-icon{font-size:1rem;width:20px;text-align:center;flex-shrink:0}
+    .sidebar-footer{padding:14px 14px 18px;border-top:1px solid rgba(255,255,255,.08);flex-shrink:0}
+    .sidebar-user{display:flex;align-items:center;gap:10px}
+    .sidebar-user-avatar{width:36px;height:36px;border-radius:50%;background:var(--accent);color:var(--primary);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.88rem;flex-shrink:0;overflow:hidden}
+    .sidebar-user-name{font-size:.82rem;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .sidebar-user-role{font-size:.7rem;color:rgba(255,255,255,.45)}
+    .sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:999}
+    /* Topbar */
+    .menu-toggle{display:none;background:none;border:none;font-size:1.3rem;cursor:pointer;color:var(--primary);padding:6px;border-radius:8px}
+    .topbar-title{flex:1;font-size:1rem;font-weight:700;color:var(--primary)}
+    .topbar-btn{width:38px;height:38px;border:none;background:var(--surface);border-radius:10px;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;transition:var(--transition)}
+    /* Page header */
+    .page-header{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:24px;flex-wrap:wrap}
+    .page-header-left h2{font-size:1.4rem;font-weight:800;color:var(--primary)}
+    .page-header-left p{font-size:.85rem;color:var(--text-muted);margin-top:3px}
+    /* Stats */
+    .stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;margin-bottom:24px}
+    .stat-card{background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;display:flex;align-items:center;gap:14px;box-shadow:var(--shadow);transition:var(--transition);position:relative;overflow:hidden}
+    .stat-card::before{content:'';position:absolute;top:0;left:0;width:4px;height:100%;background:var(--card-accent,var(--primary));border-radius:4px 0 0 4px}
+    .stat-icon{width:48px;height:48px;border-radius:12px;background:var(--card-accent-bg,rgba(26,39,68,.08));display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0}
+    .stat-value{font-size:1.6rem;font-weight:800;color:var(--primary);line-height:1.1}
+    .stat-label{font-size:.78rem;color:var(--text-muted);font-weight:500;margin-top:2px}
+    .stat-change{font-size:.72rem;font-weight:600;margin-top:4px}
+    .stat-change.up{color:var(--accent-2)}.stat-change.down{color:var(--accent-3)}
+    /* Charts */
+    .charts-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px;margin-bottom:24px}
+    .chart-card,.table-card{background:#fff;border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;margin-bottom:20px}
+    .chart-card{padding:20px}
+    .chart-card-title{font-size:.95rem;font-weight:700;color:var(--primary)}
+    .chart-card-sub{font-size:.75rem;color:var(--text-muted);margin-top:2px}
+    .chart-container{position:relative;height:220px}
+    .table-card-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:8px}
+    .table-card-title{font-size:.95rem;font-weight:700;color:var(--primary)}
+    /* Table */
+    .table-overflow{overflow-x:auto;-webkit-overflow-scrolling:touch}
+    .data-table{width:100%;border-collapse:collapse;min-width:500px}
+    .data-table th{background:var(--surface);font-size:.78rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;padding:12px 16px;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap}
+    .data-table td{padding:13px 16px;border-bottom:1px solid var(--border);font-size:.88rem;vertical-align:middle}
+    .data-table tr:last-child td{border-bottom:none}
+    .data-table tbody tr:hover{background:var(--surface)}
+    /* Buttons */
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:9px 18px;border:1.5px solid transparent;border-radius:var(--radius-sm);font-family:'Outfit',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;transition:var(--transition);white-space:nowrap;text-decoration:none;line-height:1.3}
+    .btn-primary{background:var(--primary);color:#fff;border-color:var(--primary)}
+    .btn-primary:hover{background:#243558}
+    .btn-accent{background:var(--accent);color:var(--primary);border-color:var(--accent)}
+    .btn-ghost{background:transparent;color:var(--primary);border-color:var(--border)}
+    .btn-ghost:hover{background:var(--surface)}
+    .btn-success{background:var(--accent-2);color:#fff}
+    .btn-danger{background:var(--accent-3);color:#fff}
+    .btn-sm{padding:6px 12px;font-size:.8rem;border-radius:7px}
+    .btn-full{width:100%}
+    .btn-icon{width:34px;height:34px;padding:0;border-radius:8px}
+    /* Badges */
+    .badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:99px;font-size:.72rem;font-weight:700;white-space:nowrap}
+    .badge-success{background:rgba(39,174,96,.12);color:#1a8a48}
+    .badge-danger{background:rgba(231,76,60,.12);color:#b52d20}
+    .badge-warning{background:rgba(245,166,35,.12);color:#b57a00}
+    .badge-info{background:rgba(41,128,185,.12);color:#1a6090}
+    .badge-neutral{background:var(--surface-2);color:var(--text-muted)}
+    /* Forms */
+    .form-group{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+    .form-group label{font-size:.82rem;font-weight:700;color:var(--text-muted);letter-spacing:.02em}
+    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    input[type=text],input[type=email],input[type=tel],input[type=number],input[type=password],input[type=date],input[type=time],select,textarea{padding:10px 14px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:'Outfit',sans-serif;font-size:.9rem;color:var(--text);background:#fff;transition:var(--transition);width:100%}
+    input:focus,select:focus,textarea:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(26,39,68,.1)}
+    textarea{resize:vertical;min-height:90px}
+    /* Modals */
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);backdrop-filter:blur(4px);z-index:2000;display:flex;align-items:center;justify-content:center;padding:20px}
+    .modal{background:#fff;border-radius:20px;width:100%;max-width:520px;max-height:92vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+    .modal-header{display:flex;align-items:center;justify-content:space-between;padding:20px 22px 16px;border-bottom:1px solid var(--border);position:sticky;top:0;background:#fff;z-index:1}
+    .modal-title{font-size:1rem;font-weight:800;color:var(--primary)}
+    .modal-close{width:32px;height:32px;background:var(--surface);border:none;border-radius:8px;cursor:pointer;font-size:.9rem;display:flex;align-items:center;justify-content:center;color:var(--text-muted)}
+    .modal-body{padding:20px 22px}
+    .modal-footer{padding:14px 22px 20px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:10px}
+    /* Avatars */
+    .avatar-cell{display:flex;align-items:center;gap:10px;min-width:0}
+    .avatar-sm{width:36px;height:36px;border-radius:50%;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.82rem;flex-shrink:0}
+    .avatar-name{font-weight:600;font-size:.88rem}
+    .avatar-sub{font-size:.75rem;color:var(--text-muted)}
+    /* Progress */
+    .progress-bar{height:7px;background:var(--surface-2);border-radius:99px;overflow:hidden;flex:1}
+    .progress-fill{height:100%;border-radius:99px;transition:width .6s ease}
+    /* Toast */
+    .toast-container{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column-reverse;gap:10px;pointer-events:none;max-width:360px}
+    .toast{display:flex;align-items:center;gap:12px;padding:13px 18px;background:#fff;border:1px solid var(--border);border-radius:12px;box-shadow:0 6px 24px rgba(0,0,0,.12);animation:toastIn .3s ease;pointer-events:all;min-width:240px}
+    @keyframes toastIn{from{transform:translateX(40px);opacity:0}to{transform:none;opacity:1}}
+    .toast-icon{font-size:1.1rem;flex-shrink:0}.toast-msg{font-size:.85rem;font-weight:600;flex:1}
+    .toast-success{border-left:4px solid var(--accent-2)}.toast-error{border-left:4px solid var(--accent-3)}.toast-warning{border-left:4px solid var(--accent)}
+    /* Empty state */
+    .empty-state{text-align:center;padding:48px 24px}
+    .empty-state-icon{font-size:3rem;margin-bottom:14px;opacity:.6}
+    .empty-state-title{font-size:1rem;font-weight:700;color:var(--text);margin-bottom:6px}
+    /* WA */
+    .wa-bulk-bar{background:linear-gradient(135deg,#075E54,#128C7E);border-radius:var(--radius);padding:16px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:20px;color:#fff;flex-wrap:wrap}
+    .wa-send-btn{display:inline-flex;align-items:center;gap:6px;padding:9px 16px;background:#25D366;color:#fff;border:none;border-radius:var(--radius-sm);font-family:'Outfit',sans-serif;font-size:.85rem;font-weight:700;cursor:pointer;transition:var(--transition);white-space:nowrap}
+    .wa-fee-btn{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;background:rgba(39,174,96,.12);color:#1a8a48;border:1.5px solid rgba(39,174,96,.25);border-radius:8px;font-family:'Outfit',sans-serif;font-size:.78rem;font-weight:700;cursor:pointer;transition:var(--transition)}
+    /* Info card */
+    .info-card{background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);transition:var(--transition)}
+    .info-card-icon{font-size:2rem;margin-bottom:10px}
+    .info-card-title{font-size:.95rem;font-weight:800;color:var(--primary);margin-bottom:4px}
+    .info-card-sub{font-size:.78rem;color:var(--text-muted);margin-top:3px}
+    /* Tabs */
+    .tab-bar{display:flex;gap:4px;background:var(--surface);padding:4px;border-radius:12px;margin-bottom:20px;flex-wrap:wrap}
+    .tab-item{padding:8px 18px;border:none;border-radius:9px;background:transparent;font-family:'Outfit',sans-serif;font-size:.85rem;font-weight:600;cursor:pointer;color:var(--text-muted);transition:var(--transition)}
+    .tab-item.active{background:var(--primary);color:#fff}
+    /* Announcement */
+    .announcement-item{padding:14px 0;border-bottom:1px solid var(--border)}
+    .announcement-item:last-child{border-bottom:none}
+    .announcement-title{font-weight:700;font-size:.92rem;color:var(--primary);margin-bottom:5px}
+    .announcement-body{font-size:.85rem;color:var(--text-muted);line-height:1.6;margin-bottom:8px}
+    .announcement-meta{display:flex;gap:16px;font-size:.75rem;color:var(--text-light,#9aa5c0)}
+    /* Fee row */
+    .fee-row{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border)}
+    .fee-row-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0}
+    .fee-row-name{font-size:.88rem;font-weight:600}.fee-row-date{font-size:.75rem;color:var(--text-muted)}.fee-row-amount{font-size:.95rem;font-weight:800}
+    /* Search */
+    .search-input-wrap{position:relative}.search-input-wrap input{padding-left:38px;width:220px}
+    .search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:.9rem;color:var(--text-muted);pointer-events:none}
+    /* Upload */
+    .upload-area{border:2px dashed var(--border);border-radius:var(--radius);padding:24px;text-align:center;cursor:pointer;transition:var(--transition);color:var(--text-muted);font-size:.85rem}
+    .upload-area:hover{border-color:var(--primary);background:var(--surface)}
+    .upload-icon{font-size:2rem;margin-bottom:8px}
+    /* Responsive */
+    @media(max-width:900px){
+      .main-content{margin-left:0!important}
+      .menu-toggle{display:flex!important}
+      .sidebar{transform:translateX(-100%)}
+      .sidebar.open{transform:translateX(0);box-shadow:4px 0 30px rgba(0,0,0,.25)}
+      .sidebar-overlay.show{display:block}
+      .page-content{padding:16px}
+    }
+    @media(max-width:600px){
+      .stats-grid{grid-template-columns:1fr 1fr;gap:10px}
+      .stat-value{font-size:1.3rem}
+      .stat-card{padding:14px 12px}
+      .charts-grid{grid-template-columns:1fr}
+      .form-row{grid-template-columns:1fr}
+      .page-header{flex-direction:column;align-items:flex-start}
+      .data-table th,.data-table td{padding:10px 12px;font-size:.8rem}
+      .btn{min-height:42px}
+      input,select,textarea{font-size:16px!important;min-height:44px}
+      .modal-overlay{padding:0;align-items:flex-end}
+      .modal{border-radius:20px 20px 0 0;max-height:92vh;overflow-y:auto}
+      .toast-container{left:12px;right:12px;bottom:16px;max-width:100%}
+    }
+    /* Classroom */
+    .classroom-card{background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);transition:var(--transition)}
+    .classroom-card-type{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);margin-bottom:8px}
+    .classroom-card-title{font-size:.95rem;font-weight:800;color:var(--primary);margin-bottom:6px}
+    .classroom-card-meta{font-size:.8rem;color:var(--text-muted);line-height:1.7}
+    @media print{.sidebar,.topbar,.wa-bulk-bar,.btn,.modal-overlay,.toast-container{display:none!important}.main-content{margin-left:0!important}.page-content{padding:0!important}}
+  </style>
+
+  <style>
+    .store-hero {
+      background: linear-gradient(135deg, #1a2744 0%, #2c3e7a 50%, #8e44ad 100%);
+      border-radius: 18px;
+      padding: 26px 28px;
+      color: #fff;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+      position: relative;
+      overflow: hidden;
+    }
+    .store-hero::after {
+      content: '📚';
+      position: absolute;
+      right: 24px; top: 50%;
+      transform: translateY(-50%);
+      font-size: 5rem;
+      opacity: 0.12;
+      pointer-events: none;
+    }
+    .store-hero h2 { font-size: 1.4rem; font-weight: 800; margin-bottom: 4px; }
+    .store-hero p  { opacity: 0.75; font-size: 0.9rem; }
+
+    .filter-bar {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px 18px;
+      margin-bottom: 22px;
+      box-shadow: var(--shadow);
+    }
+    .filter-bar .search-wrap { flex: 1; min-width: 220px; position: relative; }
+    .filter-bar input[type="text"] {
+      width: 100%;
+      padding: 10px 14px 10px 38px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color 0.18s;
+    }
+    .filter-bar input[type="text"]:focus { border-color: var(--primary); }
+    .search-icon-abs {
+      position: absolute; left: 12px; top: 50%;
+      transform: translateY(-50%);
+      font-size: 0.95rem; color: var(--text-muted); pointer-events: none;
+    }
+    .filter-chip-row { display: flex; gap: 6px; flex-wrap: wrap; }
+    .filter-chip {
+      padding: 6px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: 99px;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      background: #fff;
+      color: var(--text-muted);
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+    .filter-chip.active, .filter-chip:hover {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+
+    /* Book cards */
+    .book-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 18px;
+    }
+    .book-card {
+      background: #fff;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .book-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+
+    .book-cover {
+      height: 100px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3.2rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .book-cover-badge {
+      position: absolute;
+      top: 10px; right: 10px;
+      padding: 3px 10px;
+      border-radius: 99px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: #fff;
+    }
+    .book-card-body { padding: 14px 16px; flex: 1; }
+    .book-title {
+      font-weight: 800;
+      font-size: 0.94rem;
+      color: var(--primary);
+      line-height: 1.35;
+      margin-bottom: 6px;
+    }
+    .book-meta {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+    .book-card-footer {
+      padding: 11px 16px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .book-price {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: var(--primary);
+    }
+
+    /* Class tabs */
+    .class-tabs {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+    .class-tab {
+      padding: 8px 18px;
+      border: 1.5px solid var(--border);
+      border-radius: 99px;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      background: #fff;
+      color: var(--text-muted);
+      transition: all 0.15s ease;
+    }
+    .class-tab.active, .class-tab:hover {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+      box-shadow: 0 3px 10px rgba(26,39,68,0.2);
+    }
+
+    /* Subject color map */
+    .subj-Mathematics  { background: linear-gradient(135deg,#1a2744,#2980b9); }
+    .subj-Science      { background: linear-gradient(135deg,#1a4a2e,#27ae60); }
+    .subj-English      { background: linear-gradient(135deg,#7a1a1a,#e74c3c); }
+    .subj-Hindi        { background: linear-gradient(135deg,#6b3200,#f5a623); }
+    .subj-Physics      { background: linear-gradient(135deg,#2c1a4a,#8e44ad); }
+    .subj-Chemistry    { background: linear-gradient(135deg,#1a3a4a,#16a085); }
+    .subj-Biology      { background: linear-gradient(135deg,#2a4a1a,#2ecc71); }
+    .subj-default      { background: linear-gradient(135deg,#2c2c3e,#636e72); }
+
+    .subj-emojis { Mathematics:'📐', Science:'🔬', English:'📖', Hindi:'🗣️', Physics:'⚛️', Chemistry:'🧪', Biology:'🌿', 'Social Science':'🗺️' }
+
+    .view-toggle {
+      display: flex;
+      background: var(--surface);
+      border-radius: 9px;
+      padding: 4px;
+      gap: 2px;
+    }
+    .view-btn {
+      padding: 6px 12px;
+      border: none;
+      border-radius: 7px;
+      background: transparent;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      color: var(--text-muted);
+    }
+    .view-btn.active { background: #fff; color: var(--primary); box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
+
+    /* Availability panel */
+    .avail-panel {
+      background: linear-gradient(135deg, #f0f4ff, #fff);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px;
+      margin-bottom: 24px;
+    }
+    .avail-panel h3 {
+      font-size: 1rem;
+      font-weight: 800;
+      color: var(--primary);
+      margin-bottom: 14px;
+    }
+  </style>
+</head>
+<body>
+<div class="app-layout">
+  <div id="layoutSidebar"></div>
+  <div class="main-content">
+    <div id="layoutTopbar"></div>
+    <div class="page-content">
+
+      <!-- Hero -->
+      <div class="store-hero">
+        <div>
+          <h2>📚 Book Store</h2>
+          <p>Find books for your class — check availability and prices</p>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn btn-accent" id="adminAddBookBtn" style="display:none" onclick="openAddBook()">+ Add Book</button>
+          <a href="uniforms.html" class="btn btn-ghost" style="color:#fff;border-color:rgba(255,255,255,0.3)">👔 Uniform Store →</a>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-grid" id="bookStats" style="margin-bottom:20px;grid-template-columns:repeat(4,1fr)"></div>
+
+      <!-- Class Availability Quick Check -->
+      <div class="avail-panel">
+        <h3>🔎 Quick Class Book List</h3>
+        <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+          <select id="quickClass" onchange="quickClassCheck()"
+            style="padding:10px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:Outfit,sans-serif;font-size:0.9rem;background:#fff;min-width:160px">
+            <option value="">-- Select Your Class --</option>
+            <option>7</option><option>8</option><option>9</option><option>10</option><option>11</option><option>12</option>
+          </select>
+          <div style="font-size:0.85rem;color:var(--text-muted)" id="quickClassInfo"></div>
+        </div>
+        <div id="quickClassResult" style="margin-top:14px"></div>
+      </div>
+
+      <!-- Filter bar -->
+      <div class="filter-bar">
+        <div class="search-wrap">
+          <span class="search-icon-abs">🔍</span>
+          <input type="text" id="bookSearch" placeholder="Search books, authors, subjects...">
+        </div>
+
+        <div class="filter-chip-row" id="subjectChips">
+          <button class="filter-chip active" data-subj="" onclick="filterSubjChip(this,'')">All</button>
+          <button class="filter-chip" data-subj="Mathematics"    onclick="filterSubjChip(this,'Mathematics')">📐 Maths</button>
+          <button class="filter-chip" data-subj="Science"        onclick="filterSubjChip(this,'Science')">🔬 Science</button>
+          <button class="filter-chip" data-subj="English"        onclick="filterSubjChip(this,'English')">📖 English</button>
+          <button class="filter-chip" data-subj="Hindi"          onclick="filterSubjChip(this,'Hindi')">🗣️ Hindi</button>
+          <button class="filter-chip" data-subj="Physics"        onclick="filterSubjChip(this,'Physics')">⚛️ Physics</button>
+          <button class="filter-chip" data-subj="Chemistry"      onclick="filterSubjChip(this,'Chemistry')">🧪 Chemistry</button>
+          <button class="filter-chip" data-subj="Biology"        onclick="filterSubjChip(this,'Biology')">🌿 Biology</button>
+          <button class="filter-chip" data-subj="Social Science" onclick="filterSubjChip(this,'Social Science')">🗺️ Social</button>
+        </div>
+
+        <div class="filter-chip-row">
+          <select id="bookClassFilter" onchange="applyBookFilters()"
+            style="padding:7px 12px;border:1.5px solid var(--border);border-radius:9px;font-family:Outfit,sans-serif;font-size:0.85rem;background:#fff">
+            <option value="">All Classes</option>
+            <option>7</option><option>8</option><option>9</option><option>10</option><option>11</option><option>12</option>
+          </select>
+          <select id="bookStockFilter" onchange="applyBookFilters()"
+            style="padding:7px 12px;border:1.5px solid var(--border);border-radius:9px;font-family:Outfit,sans-serif;font-size:0.85rem;background:#fff">
+            <option value="">All Stock</option>
+            <option value="in">Available</option>
+            <option value="low">Low Stock</option>
+            <option value="out">Out of Stock</option>
+          </select>
+          <div class="view-toggle">
+            <button class="view-btn active" id="bookGridBtn" onclick="setBookView('grid')">⊞ Grid</button>
+            <button class="view-btn"        id="bookListBtn" onclick="setBookView('list')">☰ List</button>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+        <div style="font-size:0.85rem;color:var(--text-muted)" id="bookResultsCount"></div>
+        <div style="font-size:0.82rem;color:var(--text-muted)" id="bookTotalValue"></div>
+      </div>
+
+      <!-- Book Grid -->
+      <div class="book-grid" id="bookGrid"></div>
+
+      <!-- Book List view -->
+      <div class="table-card" id="bookTableView" style="display:none">
+        <div class="table-card-header">
+          <div class="table-card-title">All Books</div>
+          <button class="btn btn-ghost btn-sm" onclick="exportBooks()">⬇ Export</button>
+        </div>
+        <div class="table-overflow">
+          <table class="data-table" id="bookListTable">
+            <thead>
+              <tr>
+                <th>Book Name</th>
+                <th>Class</th>
+                <th>Subject</th>
+                <th>Author</th>
+                <th>Publisher</th>
+                <th>Price</th>
+                <th>Stock</th>
+                <th>Status</th>
+                <th id="adminBookTh" style="display:none">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="bookListTbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Add/Edit Book Modal -->
+<div class="modal-overlay" id="addBookModal" style="display:none">
+  <div class="modal" style="max-width:560px">
+    <div class="modal-header">
+      <div class="modal-title" id="bookModalTitle">➕ Add Book</div>
+      <button class="modal-close" onclick="closeModal('addBookModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="editBookId">
+      <div class="form-row">
+        <div class="form-group"><label>Book Name *</label><input type="text" id="bName" placeholder="Full book title"></div>
+        <div class="form-group"><label>Subject *</label>
+          <select id="bSubject">
+            <option>Mathematics</option><option>Science</option><option>English</option>
+            <option>Hindi</option><option>Physics</option><option>Chemistry</option>
+            <option>Biology</option><option>Social Science</option><option>Other</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Class *</label>
+          <select id="bClass">
+            <option>7</option><option>8</option><option>9</option>
+            <option>10</option><option>11</option><option>12</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Author *</label><input type="text" id="bAuthor" placeholder="Author name"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Publisher</label><input type="text" id="bPublisher" placeholder="Publisher name"></div>
+        <div class="form-group"><label>Edition / Year</label><input type="text" id="bEdition" placeholder="e.g. 2025"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Price (₹) *</label><input type="number" id="bPrice" placeholder="e.g. 250" min="0"></div>
+        <div class="form-group"><label>Stock Quantity *</label><input type="number" id="bStock" placeholder="e.g. 20" min="0"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('addBookModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveBook()">💾 Save Book</button>
+    </div>
+  </div>
+</div>
+
+<script src="logo_data.js"></script>
+<script src="core.js"></script>
+<script src="search.js"></script>
+<script>
+let allBooks          = [];
+let currentSubjFilter = '';
+let currentBookView   = 'grid';
+
+const SUBJ_EMOJIS = {
+  'Mathematics':'📐', 'Science':'🔬', 'English':'📖', 'Hindi':'🗣️',
+  'Physics':'⚛️', 'Chemistry':'🧪', 'Biology':'🌿', 'Social Science':'🗺️',
+};
+const SUBJ_COLORS = {
+  'Mathematics':'#1a2744,#2980b9', 'Science':'#1a4a2e,#27ae60',
+  'English':'#7a1a1a,#e74c3c',     'Hindi':'#6b3200,#f5a623',
+  'Physics':'#2c1a4a,#8e44ad',     'Chemistry':'#1a3a4a,#16a085',
+  'Biology':'#2a4a1a,#2ecc71',     'Social Science':'#2a2a1a,#f39c12',
+};
+
+function pageInit() {
+  const user = Auth.require();
+  if (!user) return;
+  buildLayout(user.role, 'Book Store');
+
+  if (user.role === 'admin') {
+    document.getElementById('adminAddBookBtn').style.display = 'inline-flex';
+    const thEl = document.getElementById('adminBookTh');
+    if (thEl) thEl.style.display = '';
+  }
+
+  allBooks = DB.books();
+  renderBookStats();
+  applyBookFilters();
+
+  // Smart search
+  SmartSearch.attach('bookSearch', {
+    types: ['books'],
+    placeholder: '🔍 Search by title, subject, author...',
+    onSelect: (item) => {
+      currentSubjFilter = '';
+      document.querySelectorAll('#subjectChips .filter-chip').forEach(c => c.classList.remove('active'));
+      document.querySelector('#subjectChips .filter-chip[data-subj=""]').classList.add('active');
+      const q = item.label.toLowerCase();
+      renderBooks(allBooks.filter(b => b.name.toLowerCase().includes(q) || b.author.toLowerCase().includes(q)));
+    },
+  });
+
+  document.getElementById('bookSearch').addEventListener('input', applyBookFilters);
+
+  // Auto-fill class filter if student
+  if ((user.role === 'student' || user.role === 'parent') && user.class) {
+    document.getElementById('quickClass').value = user.class;
+    quickClassCheck();
+  }
+
+  function handleResize() {
+    const statsGrid = document.getElementById('bookStats');
+    if (statsGrid) statsGrid.style.gridTemplateColumns = window.innerWidth < 600 ? '1fr 1fr' : 'repeat(4,1fr)';
+  }
+  window.addEventListener('resize', handleResize);
+  handleResize();
+}
+
+function renderBookStats() {
+  const b = allBooks;
+  const available = b.filter(x => x.stock > 5).length;
+  const low       = b.filter(x => x.stock > 0 && x.stock <= 5).length;
+  const out       = b.filter(x => x.stock === 0).length;
+  const totalVal  = b.reduce((s, x) => s + x.price * x.stock, 0);
+  const classes   = [...new Set(b.map(x => x.class))].length;
+
+  document.getElementById('bookStats').innerHTML = `
+    <div class="stat-card" style="--card-accent:#1a2744;--card-accent-bg:rgba(26,39,68,0.09)">
+      <div class="stat-icon">📚</div>
+      <div class="stat-content"><div class="stat-value">${b.length}</div><div class="stat-label">Total Books</div></div>
+    </div>
+    <div class="stat-card" style="--card-accent:#27ae60;--card-accent-bg:rgba(39,174,96,0.09)">
+      <div class="stat-icon">✅</div>
+      <div class="stat-content"><div class="stat-value">${available}</div><div class="stat-label">Available</div></div>
+    </div>
+    <div class="stat-card" style="--card-accent:#f5a623;--card-accent-bg:rgba(245,166,35,0.09)">
+      <div class="stat-icon">📖</div>
+      <div class="stat-content"><div class="stat-value">${classes}</div><div class="stat-label">Classes Covered</div></div>
+    </div>
+    <div class="stat-card" style="--card-accent:#8e44ad;--card-accent-bg:rgba(142,68,173,0.09)">
+      <div class="stat-icon">💰</div>
+      <div class="stat-content"><div class="stat-value">${money(totalVal)}</div><div class="stat-label">Stock Value</div></div>
+    </div>
+  `;
+}
+
+function filterSubjChip(btn, subj) {
+  document.querySelectorAll('#subjectChips .filter-chip').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  currentSubjFilter = subj;
+  applyBookFilters();
+}
+
+function applyBookFilters() {
+  const q       = (document.getElementById('bookSearch').value || '').toLowerCase();
+  const cls     = document.getElementById('bookClassFilter').value;
+  const stockF  = document.getElementById('bookStockFilter').value;
+  let filtered  = allBooks;
+
+  if (currentSubjFilter) filtered = filtered.filter(b => b.subject === currentSubjFilter);
+  if (cls)   filtered = filtered.filter(b => b.class === cls);
+  if (q)     filtered = filtered.filter(b =>
+    b.name.toLowerCase().includes(q) ||
+    b.author.toLowerCase().includes(q) ||
+    b.subject.toLowerCase().includes(q) ||
+    b.publisher?.toLowerCase().includes(q) ||
+    `class ${b.class}`.includes(q)
+  );
+  if (stockF) filtered = filtered.filter(b => {
+    if (stockF === 'in')  return b.stock > 5;
+    if (stockF === 'low') return b.stock > 0 && b.stock <= 5;
+    if (stockF === 'out') return b.stock === 0;
+    return true;
+  });
+
+  const totalFilteredVal = filtered.reduce((s, b) => s + b.price * b.stock, 0);
+  document.getElementById('bookResultsCount').textContent =
+    `Showing ${filtered.length} of ${allBooks.length} books`;
+  document.getElementById('bookTotalValue').textContent =
+    filtered.length ? `Total value: ${money(totalFilteredVal)}` : '';
+
+  renderBooks(filtered);
+  if (currentBookView === 'list') renderBookList(filtered);
+}
+
+function renderBooks(books) {
+  const grid  = document.getElementById('bookGrid');
+  const user  = Auth.getUser();
+  const isAdmin = user?.role === 'admin';
+
+  if (!books.length) {
+    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1">
+      <div class="empty-state-icon">📚</div>
+      <div class="empty-state-title">No books found</div>
+      <p>Try a different search or filter</p>
+    </div>`;
+    return;
+  }
+
+  grid.innerHTML = books.map(b => {
+    const status   = DB.getBookStockStatus(b);
+    const emoji    = SUBJ_EMOJIS[b.subject] || '📖';
+    const colors   = (SUBJ_COLORS[b.subject] || '#2c2c3e,#636e72').split(',');
+    const gradient = `linear-gradient(135deg, ${colors[0]}, ${colors[1]})`;
+    const badgeColor = status.color;
+
+    return `
+      <div class="book-card">
+        <div class="book-cover" style="background:${gradient}">
+          <span>${emoji}</span>
+          <div class="book-cover-badge" style="background:${badgeColor}">${status.label}</div>
+        </div>
+        <div class="book-card-body">
+          <div class="book-title">${b.name}</div>
+          <div class="book-meta">
+            <span>✍️ ${b.author}</span><br>
+            <span>🏫 Class ${b.class} · ${b.subject}</span><br>
+            <span>🏢 ${b.publisher || 'N/A'} ${b.edition ? '· ' + b.edition : ''}</span>
+          </div>
+          <div style="margin-top:10px;display:flex;align-items:center;gap:8px">
+            <div class="progress-bar" style="flex:1">
+              <div class="progress-fill" style="width:${Math.min(100,(b.stock/30)*100)}%;background:${badgeColor}"></div>
+            </div>
+            <span style="font-size:0.78rem;font-weight:700;color:${badgeColor}">${b.stock} left</span>
+          </div>
+        </div>
+        <div class="book-card-footer">
+          <div class="book-price">${money(b.price)}</div>
+          <div style="display:flex;gap:6px">
+            ${isAdmin ? `
+              <button class="btn btn-ghost btn-sm btn-icon" onclick="editBook('${b.id}')">✏️</button>
+              <button class="btn btn-ghost btn-sm btn-icon" onclick="updateBookStock('${b.id}')">📦</button>
+              <button class="btn btn-danger btn-sm btn-icon" onclick="deleteBook('${b.id}')">🗑️</button>
+            ` : `<span class="badge ${status.badge}">${status.label}</span>`}
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderBookList(books) {
+  const user    = Auth.getUser();
+  const isAdmin = user?.role === 'admin';
+  const tbody   = document.getElementById('bookListTbody');
+  tbody.innerHTML = books.map(b => {
+    const status = DB.getBookStockStatus(b);
+    return `
+      <tr>
+        <td><div class="avatar-name">${b.name}</div><div class="avatar-sub">${b.id}</div></td>
+        <td>Class ${b.class}</td>
+        <td>${SUBJ_EMOJIS[b.subject] || '📖'} ${b.subject}</td>
+        <td>${b.author}</td>
+        <td style="font-size:0.82rem">${b.publisher || '—'}</td>
+        <td><strong>${money(b.price)}</strong></td>
+        <td><strong>${b.stock}</strong></td>
+        <td><span class="badge ${status.badge}">${status.label}</span></td>
+        ${isAdmin ? `<td>
+          <div style="display:flex;gap:6px">
+            <button class="btn btn-ghost btn-sm btn-icon" onclick="editBook('${b.id}')">✏️</button>
+            <button class="btn btn-ghost btn-sm btn-icon" onclick="updateBookStock('${b.id}')">📦</button>
+            <button class="btn btn-danger btn-sm btn-icon" onclick="deleteBook('${b.id}')">🗑️</button>
+          </div>
+        </td>` : ''}
+      </tr>
+    `;
+  }).join('');
+}
+
+function setBookView(v) {
+  currentBookView = v;
+  document.getElementById('bookGridBtn').classList.toggle('active', v === 'grid');
+  document.getElementById('bookListBtn').classList.toggle('active', v === 'list');
+  document.getElementById('bookGrid').style.display      = v === 'grid' ? 'grid' : 'none';
+  document.getElementById('bookTableView').style.display = v === 'list' ? 'block' : 'none';
+  if (v === 'list') applyBookFilters();
+}
+
+// ---- Quick class check ----
+function quickClassCheck() {
+  const cls = document.getElementById('quickClass').value;
+  const resultEl = document.getElementById('quickClassResult');
+  const infoEl   = document.getElementById('quickClassInfo');
+
+  if (!cls) { resultEl.innerHTML = ''; infoEl.textContent = ''; return; }
+
+  const books = allBooks.filter(b => b.class === cls);
+  infoEl.textContent = `${books.length} books for Class ${cls}`;
+
+  if (!books.length) {
+    resultEl.innerHTML = '<p style="color:var(--text-muted);font-size:0.88rem">No books listed for this class yet.</p>';
+    return;
+  }
+
+  const totalPrice = books.reduce((s, b) => s + b.price, 0);
+  const rows = books.map(b => {
+    const status = DB.getBookStockStatus(b);
+    const emoji  = SUBJ_EMOJIS[b.subject] || '📖';
+    return `
+      <tr>
+        <td>${emoji} ${b.name}</td>
+        <td>${b.subject}</td>
+        <td>${b.author}</td>
+        <td><strong>${money(b.price)}</strong></td>
+        <td><span class="badge ${status.badge}">${status.label}</span></td>
+      </tr>
+    `;
+  }).join('');
+
+  resultEl.innerHTML = `
+    <div style="background:#fff;border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:12px">
+      <table class="data-table">
+        <thead>
+          <tr><th>Book</th><th>Subject</th><th>Author</th><th>Price</th><th>Availability</th></tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+    <div style="text-align:right;font-size:0.88rem;font-weight:700;color:var(--primary)">
+      Total set price: <span style="font-size:1rem">${money(totalPrice)}</span>
+    </div>
+  `;
+}
+
+// ---- Admin CRUD ----
+function openAddBook() {
+  document.getElementById('bookModalTitle').textContent = '➕ Add Book';
+  document.getElementById('editBookId').value = '';
+  ['bName','bAuthor','bPublisher','bEdition'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('bPrice').value = '';
+  document.getElementById('bStock').value = '';
+  openModal('addBookModal');
+}
+
+function editBook(id) {
+  const b = allBooks.find(x => x.id === id);
+  if (!b) return;
+  document.getElementById('bookModalTitle').textContent = '✏️ Edit Book';
+  document.getElementById('editBookId').value = id;
+  document.getElementById('bName').value      = b.name;
+  document.getElementById('bSubject').value   = b.subject;
+  document.getElementById('bClass').value     = b.class;
+  document.getElementById('bAuthor').value    = b.author;
+  document.getElementById('bPublisher').value = b.publisher || '';
+  document.getElementById('bEdition').value   = b.edition || '';
+  document.getElementById('bPrice').value     = b.price;
+  document.getElementById('bStock').value     = b.stock;
+  openModal('addBookModal');
+}
+
+function saveBook() {
+  const name      = document.getElementById('bName').value.trim();
+  const subject   = document.getElementById('bSubject').value;
+  const cls       = document.getElementById('bClass').value;
+  const author    = document.getElementById('bAuthor').value.trim();
+  const publisher = document.getElementById('bPublisher').value.trim();
+  const edition   = document.getElementById('bEdition').value.trim();
+  const price     = parseFloat(document.getElementById('bPrice').value);
+  const stock     = parseInt(document.getElementById('bStock').value) || 0;
+  const editId    = document.getElementById('editBookId').value;
+
+  if (!name || !author || !price) { toast('Name, author and price are required', 'warning'); return; }
+
+  const books = DB.books();
+  if (editId) {
+    const idx = books.findIndex(b => b.id === editId);
+    if (idx >= 0) books[idx] = { ...books[idx], name, subject, class: cls, author, publisher, edition, price, stock };
+    toast('Book updated!', 'success');
+  } else {
+    books.push({ id: DB.newId('B'), name, subject, class: cls, author, publisher, edition, price, stock });
+    toast('Book added!', 'success');
+  }
+  DB.saveBooks(books);
+  allBooks = books;
+  renderBookStats();
+  applyBookFilters();
+  quickClassCheck();
+  closeModal('addBookModal');
+}
+
+function updateBookStock(id) {
+  const b = allBooks.find(x => x.id === id);
+  if (!b) return;
+  const qty = prompt(`Update stock for:\n"${b.name}"\n\nCurrent stock: ${b.stock}\nEnter new quantity:`);
+  if (qty === null) return;
+  const newQty = parseInt(qty);
+  if (isNaN(newQty) || newQty < 0) { toast('Invalid quantity', 'warning'); return; }
+  const books = DB.books();
+  const idx   = books.findIndex(x => x.id === id);
+  if (idx >= 0) { books[idx].stock = newQty; DB.saveBooks(books); allBooks = books; }
+  applyBookFilters();
+  renderBookStats();
+  toast('Stock updated!', 'success');
+}
+
+function deleteBook(id) {
+  confirm2('Delete this book?', () => {
+    const books = DB.books().filter(b => b.id !== id);
+    DB.saveBooks(books);
+    allBooks = books;
+    renderBookStats();
+    applyBookFilters();
+    toast('Book deleted', 'error');
+  });
+}
+
+function exportBooks() {
+  const books = DB.books();
+  const csv = ['ID,Name,Class,Subject,Author,Publisher,Edition,Price,Stock',
+    ...books.map(b => `${b.id},"${b.name}",${b.class},${b.subject},"${b.author}","${b.publisher||''}","${b.edition||''}",${b.price},${b.stock}`)
+  ].join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'books.csv';
+  a.click();
+  toast('Book list exported!', 'success');
+}
+</script>
+<script>
+// Remove loader after page renders
+(function() {
+  function removeLoader() {
+    var l = document.getElementById('page-loader');
+    if (l) { l.style.opacity = '0'; setTimeout(function(){ l.remove(); }, 300); }
+  }
+  window.addEventListener('load', removeLoader);
+  setTimeout(removeLoader, 2000); // fallback
+})();
+</script>
+</body>
+</html>

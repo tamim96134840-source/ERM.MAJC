@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ERP Reset</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif;background:#1a2744;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.box{background:#fff;border-radius:18px;padding:32px 24px;max-width:360px;width:100%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.4)}
+h2{color:#1a2744;font-size:1.2rem;font-weight:800;margin-bottom:8px}
+p{color:#6b7a99;font-size:.85rem;line-height:1.6;margin-bottom:20px}
+.btn{display:block;width:100%;padding:14px;background:#27ae60;color:#fff;border:none;border-radius:12px;font-size:1rem;font-weight:800;cursor:pointer;font-family:inherit}
+.log{margin-top:16px;text-align:left;background:#f5f7ff;border-radius:8px;padding:12px;font-size:.78rem;color:#1a2744;max-height:150px;overflow-y:auto;display:none}
+.done{margin-top:14px;background:#f0fff4;border:1px solid #86efac;border-radius:10px;padding:12px;font-size:.85rem;font-weight:700;color:#166534;display:none}
+</style>
+</head>
+<body>
+<div class="box">
+  <div style="font-size:2.5rem;margin-bottom:12px">🔄</div>
+  <h2>Reset ERP Session</h2>
+  <p>This will clear all old data from your browser and take you to a fresh login screen.</p>
+  <button class="btn" id="btn" onclick="reset()">🗑️ Clear &amp; Go to Login</button>
+  <div class="done" id="done">✅ Cleared! Redirecting...</div>
+  <div class="log" id="log"></div>
+</div>
+<script>
+function log(m){ var el=document.getElementById('log'); el.style.display='block'; el.innerHTML+=m+'<br>'; }
+function reset(){
+  document.getElementById('btn').disabled=true;
+  document.getElementById('btn').textContent='Clearing...';
+  try{
+    // Clear ALL localStorage — every single key
+    var keys=[];
+    for(var i=0;i<localStorage.length;i++) keys.push(localStorage.key(i));
+    keys.forEach(function(k){ localStorage.removeItem(k); });
+    log('Cleared '+keys.length+' localStorage items');
+  }catch(e){ log('localStorage error: '+e.message); }
+  try{ sessionStorage.clear(); log('Cleared sessionStorage'); }catch(e){}
+  try{
+    document.cookie.split(';').forEach(function(c){
+      var n=c.trim().split('=')[0];
+      document.cookie=n+'=;expires=Thu,01 Jan 1970 00:00:00 GMT;path=/';
+    });
+    log('Cleared cookies');
+  }catch(e){}
+  document.getElementById('done').style.display='block';
+  log('Redirecting to login.html...');
+  setTimeout(function(){ window.location.replace('login.html'); },1500);
+}
+// Auto-run immediately on page load
+window.onload=reset;
+</script>
+</body>
+</html>

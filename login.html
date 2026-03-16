@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>Login – M.A. SR. SEC. SCHOOL ERP</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:'Outfit',system-ui,sans-serif;background:#0f1829;-webkit-text-size-adjust:100%}
+.pg{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;
+  background:linear-gradient(145deg,#0f1829 0%,#1a2744 55%,#1e3a5f 100%);position:relative;overflow:hidden}
+.blob{position:absolute;border-radius:50%;filter:blur(72px);opacity:.13;pointer-events:none;animation:bp 9s ease-in-out infinite}
+.b1{width:400px;height:400px;background:#f5a623;top:-110px;right:-100px}
+.b2{width:260px;height:260px;background:#27ae60;bottom:-70px;left:-60px;animation-delay:3.5s}
+.b3{width:170px;height:170px;background:#2980b9;top:42%;left:4%;animation-delay:6s}
+@keyframes bp{0%,100%{transform:scale(1);opacity:.13}50%{transform:scale(1.1);opacity:.2}}
+.card{background:#fff;border-radius:22px;padding:32px 28px 26px;width:100%;max-width:410px;
+  box-shadow:0 28px 70px rgba(0,0,0,.42);position:relative;z-index:10;
+  animation:ci .38s cubic-bezier(.4,0,.2,1) both}
+@keyframes ci{from{transform:translateY(20px) scale(.97);opacity:0}to{transform:none;opacity:1}}
+.hdr{display:flex;align-items:center;gap:12px;padding-bottom:18px;border-bottom:1px solid #edf0f8;margin-bottom:19px}
+.logo{width:56px;height:56px;border-radius:12px;object-fit:contain;background:#f5f7ff;padding:4px;flex-shrink:0;box-shadow:0 4px 12px rgba(26,39,68,.12)}
+.sname{font-size:.86rem;font-weight:800;color:#1a2744;line-height:1.35}
+.stag{font-size:.68rem;color:#6b7a99;font-style:italic;margin-top:2px}
+.sbdg{display:inline-block;font-size:.6rem;font-weight:700;background:rgba(245,166,35,.12);color:#9a6200;padding:2px 8px;border-radius:99px;border:1px solid rgba(245,166,35,.28);margin-top:4px}
+h1{font-size:1.5rem;font-weight:900;color:#1a2744;letter-spacing:-.03em;margin-bottom:3px}
+.sub{font-size:.83rem;color:#6b7a99;margin-bottom:19px}
+/* Tabs */
+.rtabs{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;background:#f0f4ff;border-radius:12px;padding:4px;margin-bottom:19px}
+.rtab{display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 3px;border:none;border-radius:9px;
+  font-family:'Outfit',sans-serif;font-size:.69rem;font-weight:700;cursor:pointer;
+  background:transparent;color:#6b7a99;transition:all .15s;line-height:1.2}
+.rtab .e{font-size:1.12rem;display:block}
+.rtab.on{background:#1a2744;color:#fff;box-shadow:0 3px 10px rgba(26,39,68,.26)}
+.rtab:not(.on):hover{background:rgba(26,39,68,.07);color:#1a2744}
+/* Error */
+.err{display:none;background:#fff5f5;border:1.5px solid #fca5a5;border-radius:9px;padding:10px 13px;font-size:.81rem;font-weight:600;color:#dc2626;margin-bottom:13px}
+.err.on{display:block;animation:sk .28s ease}
+@keyframes sk{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+/* Field */
+.fg{margin-bottom:12px}
+.lbl{display:block;font-size:.73rem;font-weight:700;color:#6b7a99;text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px}
+.inp{width:100%;padding:11px 13px;border:1.5px solid #dde3f0;border-radius:9px;
+  font-family:'Outfit',sans-serif;font-size:15px;color:#1a2744;background:#fff;
+  transition:border-color .14s,box-shadow .14s;outline:none;-webkit-appearance:none}
+.inp:focus{border-color:#1a2744;box-shadow:0 0 0 3px rgba(26,39,68,.09)}
+.inp::placeholder{color:#b8c4d8}
+.pw{position:relative}.pw .inp{padding-right:44px}
+.eye{position:absolute;right:11px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:1rem;padding:4px;color:#6b7a99}
+/* Row */
+.row{display:flex;align-items:center;justify-content:space-between;margin-bottom:17px}
+.rem{display:flex;align-items:center;gap:7px;font-size:.8rem;color:#6b7a99;cursor:pointer}
+.rem input{width:15px;height:15px;accent-color:#1a2744;cursor:pointer}
+.fgt{background:none;border:none;color:#1a2744;font-family:'Outfit',sans-serif;font-size:.8rem;font-weight:700;cursor:pointer}
+.fgt:hover{text-decoration:underline}
+/* Sign in */
+.sbtn{width:100%;padding:13px;background:#1a2744;color:#fff;border:none;border-radius:11px;
+  font-family:'Outfit',sans-serif;font-size:.95rem;font-weight:800;cursor:pointer;
+  transition:all .16s;display:flex;align-items:center;justify-content:center;gap:7px;min-height:48px}
+.sbtn:hover:not(:disabled){background:#243558;transform:translateY(-1px);box-shadow:0 5px 18px rgba(26,39,68,.32)}
+.sbtn:disabled{opacity:.6;cursor:not-allowed;transform:none}
+.spin{display:none;width:17px;height:17px;border:2.5px solid rgba(255,255,255,.28);border-top-color:#fff;border-radius:50%;animation:sp .6s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+.hint{margin-top:12px;padding:10px 12px;background:#f0f4ff;border-radius:9px;font-size:.76rem;color:#6b7a99;line-height:1.55;border-left:3px solid #dde3f0}
+.foot{text-align:center;margin-top:17px;font-size:.67rem;color:#aab2c8}
+/* Toast */
+.tbox{position:fixed;bottom:22px;right:20px;z-index:9999;display:flex;flex-direction:column-reverse;gap:8px;pointer-events:none}
+.t{background:#fff;border:1px solid #e2e8f0;border-radius:11px;padding:11px 14px;font-size:.81rem;font-weight:600;box-shadow:0 7px 22px rgba(0,0,0,.11);display:flex;align-items:center;gap:8px;animation:tin .23s ease;pointer-events:all}
+@keyframes tin{from{transform:translateX(26px);opacity:0}to{transform:none;opacity:1}}
+.tok{border-left:4px solid #27ae60}.ter{border-left:4px solid #e74c3c}
+@media(max-width:420px){.card{padding:24px 15px 20px;border-radius:18px}.h1{font-size:1.3rem}.rtab{font-size:.63rem}.rtab .e{font-size:1rem}}
+</style>
+</head>
+<body>
+<div class="pg">
+  <div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>
+  <div class="card" id="card">
+    <div class="hdr">
+      <img id="logo-img" class="logo" src="" alt="" style="display:none">
+      <div>
+        <div class="sname" id="sname">M.A. SR. SEC. SCHOOL, LALA</div>
+        <div class="stag">Knowledge Is Light</div>
+        <div class="sbdg">Run by R.D. Foundation · Est. 2014</div>
+      </div>
+    </div>
+    <h1>Welcome Back</h1>
+    <div class="sub">Sign in to access your ERP portal</div>
+    <div class="rtabs">
+      <button class="rtab on" data-r="admin"   onclick="setR('admin')">  <span class="e">🔐</span>Admin   </button>
+      <button class="rtab"    data-r="teacher" onclick="setR('teacher')"><span class="e">👨‍🏫</span>Teacher </button>
+      <button class="rtab"    data-r="student" onclick="setR('student')"><span class="e">🎓</span>Student </button>
+      <button class="rtab"    data-r="parent"  onclick="setR('parent')"> <span class="e">👪</span>Parent  </button>
+    </div>
+    <div class="err" id="err"></div>
+    <div class="fg">
+      <label class="lbl" id="idlbl" for="uid">Admin Username</label>
+      <input class="inp" type="text" id="uid" placeholder="Enter your ID" autocomplete="username" autocorrect="off" autocapitalize="off" spellcheck="false">
+    </div>
+    <div class="fg">
+      <label class="lbl" for="upwd">Password</label>
+      <div class="pw">
+        <input class="inp" type="password" id="upwd" placeholder="Enter your password" autocomplete="current-password">
+        <button class="eye" type="button" id="eye" onclick="toggleEye()">👁️</button>
+      </div>
+    </div>
+    <div class="row">
+      <label class="rem"><input type="checkbox" id="rem"> Remember me</label>
+      <button class="fgt" onclick="forgot()">Forgot password?</button>
+    </div>
+    <button class="sbtn" id="sbtn" onclick="login()">
+      <span id="btxt">🔓 Sign In</span><div class="spin" id="spin"></div>
+    </button>
+    <div class="hint" id="hint">🔐 Admin: Use credentials set by the system administrator.</div>
+    <div class="foot">© 2025 M.A. SR. SEC. SCHOOL, LALA · Run by R.D. Foundation</div>
+  </div>
+</div>
+<div class="tbox" id="tbox"></div>
+
+<script>
+// ── All logic is 100% self-contained. No external JS files needed. ──
+
+var role='admin', tries=0, lockTill=0;
+
+// Safe storage
+function sg(k,d){ try{var v=localStorage.getItem(k);return v===null?d:JSON.parse(v);}catch(e){return d;} }
+function ss(k,v){ try{localStorage.setItem(k,JSON.stringify(v));}catch(e){} }
+function sd(k){ try{localStorage.removeItem(k);}catch(e){} }
+
+// Data readers
+function cfg(){ return sg('settings',{admin_user:'admin',admin_pass:'admin123',admin_name:'Administrator',admin_email:''}); }
+function students(){ return sg('students',[]); }
+function teachers(){ return sg('teachers',[]); }
+function college(){ return sg('college',{name:'M.A. SR. SEC. SCHOOL, LALA',tagline:'Knowledge Is Light',phone:'',email:''}); }
+
+// Logo
+function loadLogo(){
+  var c=college();
+  var src=(c&&c.logo)?c.logo:'';
+  if(!src && typeof SCHOOL_LOGO_BASE64!=='undefined') src=SCHOOL_LOGO_BASE64;
+  if(src){ var el=document.getElementById('logo-img'); el.src=src; el.style.display='block'; }
+}
+
+// Boot
+window.addEventListener('DOMContentLoaded',function(){
+  // *** ALWAYS clear session on login page — no auto-redirect ***
+  sd('user');
+
+  // Load logo lazily
+  var s=document.createElement('script');
+  s.src='logo_data.js';
+  s.onload=function(){ loadLogo(); };
+  s.onerror=function(){};
+  document.body.appendChild(s);
+
+  // School name
+  var c=college();
+  if(c&&c.name){ document.getElementById('sname').textContent=c.name; }
+
+  // Restore remember-me
+  var saved=sg('remember',null);
+  if(saved){
+    document.getElementById('uid').value=saved.id||'';
+    document.getElementById('upwd').value=saved.pw||'';
+    document.getElementById('rem').checked=true;
+    setR(saved.role||'admin');
+  }
+
+  // Enter key
+  document.addEventListener('keydown',function(e){ if(e.key==='Enter') login(); });
+});
+
+// Role tabs
+var LABELS={admin:'Admin Username',teacher:'Employee ID',student:'Student ID (e.g. STU0001)',parent:'Parent Phone Number'};
+var HINTS={
+  admin:'🔐 Admin: Use the credentials set by the system administrator.',
+  teacher:'👨‍🏫 Teacher: Use your Employee ID and assigned password.',
+  student:'🎓 Student: Use your Student ID (e.g. STU0001) and login password.',
+  parent:'👪 Parent: Use your registered phone number and portal password.'
+};
+function setR(r){
+  role=r;
+  document.querySelectorAll('.rtab').forEach(function(t){t.classList.toggle('on',t.getAttribute('data-r')===r);});
+  document.getElementById('idlbl').textContent=LABELS[r]||'Username / ID';
+  document.getElementById('hint').textContent=HINTS[r]||'';
+  clearErr();
+}
+
+// Eye toggle
+function toggleEye(){
+  var i=document.getElementById('upwd'),b=document.getElementById('eye');
+  var show=i.type==='password';i.type=show?'text':'password';b.textContent=show?'🙈':'👁️';
+}
+
+// Error
+function clearErr(){ var e=document.getElementById('err');e.classList.remove('on'); }
+function showErr(m){ var e=document.getElementById('err');e.textContent=m;e.classList.remove('on');void e.offsetHeight;e.classList.add('on'); }
+
+// Forgot
+function forgot(){
+  var c=college();
+  alert('For password reset, contact the school:\n\n📞 '+(c.phone||'School Office')+'\n✉️  '+(c.email||'info@nazmm.edu')+'\n\nAdmin can reset passwords via Settings → Admin Credentials.');
+}
+
+// Toast
+function showToast(msg,type){
+  var box=document.getElementById('tbox');
+  var t=document.createElement('div');
+  t.className='t '+(type==='ok'?'tok':'ter');
+  t.textContent=msg;
+  box.appendChild(t);
+  setTimeout(function(){t.style.opacity='0';t.style.transform='translateX(26px)';t.style.transition='all .28s';setTimeout(function(){t.remove();},300);},2500);
+}
+
+// Busy
+function busy(on){
+  var btn=document.getElementById('sbtn'),txt=document.getElementById('btxt'),sp=document.getElementById('spin');
+  btn.disabled=on;txt.style.display=on?'none':'inline';sp.style.display=on?'block':'none';
+}
+
+// ── MAIN LOGIN ──
+function login(){
+  clearErr();
+  if(tries>=3&&Date.now()<lockTill){showErr('Too many attempts. Wait '+Math.ceil((lockTill-Date.now())/1000)+'s.');return;}
+
+  var id=(document.getElementById('uid').value||'').trim();
+  var pw=(document.getElementById('upwd').value||'').trim();
+  if(!id){showErr('Please enter your username or ID.');document.getElementById('uid').focus();return;}
+  if(!pw){showErr('Please enter your password.');document.getElementById('upwd').focus();return;}
+
+  busy(true);
+  setTimeout(function(){
+    try{
+      var r=auth(id,pw,role);
+      if(r.ok){
+        tries=0;
+        ss('user',r.user);
+        if(document.getElementById('rem').checked) ss('remember',{id:id,pw:pw,role:role});
+        else sd('remember');
+        showToast('✅ Welcome, '+r.user.name+'!','ok');
+        var c=document.getElementById('card');
+        if(c) c.style.boxShadow='0 28px 70px rgba(39,174,96,.28),0 0 0 2px #27ae60';
+        setTimeout(function(){go(r.user.role);},700);
+      } else {
+        tries++;
+        if(tries>=3){lockTill=Date.now()+600000;showErr('3 failed attempts. Locked 10 min.');}
+        else showErr(r.msg||'Incorrect credentials. Please try again.');
+        document.getElementById('upwd').value='';
+        document.getElementById('upwd').focus();
+        busy(false);
+      }
+    }catch(e){
+      console.error('[Login]',e);
+      showErr('Error: '+(e.message||'Please try again.'));
+      busy(false);
+    }
+  },480);
+}
+
+// ── AUTH ──
+function auth(id,pw,r){
+  var cfg_=cfg();
+  if(r==='admin'){
+    var u=cfg_.admin_user||'admin', p=cfg_.admin_pass||'admin123';
+    if(id===u&&pw===p) return{ok:true,user:{id:'ADMIN',name:cfg_.admin_name||'Administrator',role:'admin',email:cfg_.admin_email||'',phone:cfg_.admin_phone||''}};
+    return{ok:false,msg:'Incorrect admin username or password.'};
+  }
+  if(r==='teacher'){
+    var ts=teachers();
+    for(var i=0;i<ts.length;i++){
+      var t=ts[i];
+      if((t.id===id||t.emp_id===id)&&t.password===pw)
+        return{ok:true,user:{id:t.id,name:t.name,role:'teacher',email:t.email||'',phone:t.phone||'',subject:t.subject||''}};
+    }
+    return{ok:false,msg:'Incorrect teacher ID or password.'};
+  }
+  if(r==='student'){
+    var ss_=students();
+    for(var j=0;j<ss_.length;j++){
+      var s=ss_[j];
+      if(s.id===id&&s.password===pw)
+        return{ok:true,user:{id:s.id,name:s.name,role:'student',class:s.class||'',section:s.section||'',email:s.email||''}};
+    }
+    return{ok:false,msg:'Incorrect student ID or password.'};
+  }
+  if(r==='parent'){
+    var ps=students();
+    for(var k=0;k<ps.length;k++){
+      var p=ps[k];
+      if(p.parent_phone===id&&p.parent_password===pw)
+        return{ok:true,user:{id:'P_'+p.id,name:p.parent_name||('Parent of '+p.name),role:'parent',phone:p.parent_phone||'',student_id:p.id,class:p.class||''}};
+    }
+    return{ok:false,msg:'Incorrect phone number or password.'};
+  }
+  return{ok:false,msg:'Unknown role.'};
+}
+
+// ── REDIRECT ──
+function go(r){
+  var m={admin:'dashboard.html',teacher:'teacher.html',student:'student.html',parent:'student.html',accountant:'fees.html'};
+  window.location.href=m[r]||'dashboard.html';
+}
+</script>
+</body>
+</html>

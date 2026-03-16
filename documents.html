@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Documents – School ERP</title>
+  <link rel="stylesheet" href="style.css">
+  <style id="page-loader-style">
+    #page-loader {
+      position: fixed; inset: 0; background: #1a2744;
+      display: flex; align-items: center; justify-content: center;
+      z-index: 99999; flex-direction: column; gap: 16px;
+      transition: opacity 0.3s ease;
+    }
+    #page-loader .pl-spin {
+      width: 44px; height: 44px;
+      border: 4px solid rgba(255,255,255,0.2);
+      border-top-color: #f5a623;
+      border-radius: 50%;
+      animation: pl-spin 0.7s linear infinite;
+    }
+    #page-loader .pl-text {
+      color: rgba(255,255,255,0.6);
+      font-family: 'Outfit', system-ui, sans-serif;
+      font-size: 0.85rem; font-weight: 600;
+    }
+    @keyframes pl-spin { to { transform: rotate(360deg); } }
+  </style>
+
+  <style id="fallback-css">
+    /* Emergency fallback — ensures pages render if style.css path fails */
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap');
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--primary:#1a2744;--accent:#f5a623;--accent-2:#27ae60;--accent-3:#e74c3c;--surface:#f0f4ff;--surface-2:#e8edf8;--bg:#f5f7ff;--border:#dde3f0;--border-2:#c8d0e8;--text:#1a2744;--text-muted:#6b7a99;--card:#fff;--sidebar-w:260px;--topbar-h:64px;--shadow:0 2px 12px rgba(26,39,68,.08);--shadow-md:0 4px 20px rgba(26,39,68,.11);--shadow-lg:0 8px 32px rgba(26,39,68,.15);--radius:14px;--radius-sm:9px;--transition:all .18s ease}
+    html{-webkit-text-size-adjust:100%}
+    body{font-family:'Outfit',system-ui,sans-serif;background:var(--bg);color:var(--text);font-size:15px;min-height:100vh;overflow-x:hidden}
+    img{max-width:100%;display:block}
+    a{color:var(--primary);text-decoration:none}
+    button{font-family:inherit}
+    input,select,textarea{font-family:inherit;outline:none}
+    /* Layout */
+    .app-layout{display:flex;min-height:100vh}
+    .sidebar{position:fixed;left:0;top:0;width:var(--sidebar-w);height:100vh;background:linear-gradient(180deg,#1a2744,#0f1829);color:#fff;display:flex;flex-direction:column;z-index:1000;overflow-y:auto;transition:transform .28s ease;box-shadow:4px 0 24px rgba(0,0,0,.18)}
+    .main-content{flex:1;margin-left:var(--sidebar-w);min-height:100vh;display:flex;flex-direction:column;transition:margin-left .28s ease}
+    .topbar{position:sticky;top:0;height:var(--topbar-h);background:rgba(255,255,255,.96);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;padding:0 24px;z-index:900;box-shadow:0 2px 10px rgba(26,39,68,.06)}
+    .page-content{flex:1;padding:24px;max-width:1400px;width:100%}
+    .sidebar-header{display:flex;align-items:center;gap:12px;padding:20px 16px 16px;border-bottom:1px solid rgba(255,255,255,.08);flex-shrink:0}
+    .sidebar-logo{width:48px;height:48px;object-fit:contain;border-radius:12px;background:rgba(255,255,255,.1);padding:4px;flex-shrink:0}
+    .sidebar-school-name{font-size:.82rem;font-weight:800;line-height:1.3;color:#fff}
+    .sidebar-school-tagline{font-size:.7rem;color:rgba(255,255,255,.5);margin-top:2px;font-style:italic}
+    .sidebar-nav{flex:1;padding:12px 10px;display:flex;flex-direction:column;gap:2px}
+    .nav-section-label{font-size:.66rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.35);padding:14px 8px 6px}
+    .nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:9px;color:rgba(255,255,255,.72);font-size:.88rem;font-weight:500;cursor:pointer;transition:var(--transition);text-decoration:none;white-space:nowrap}
+    .nav-item:hover{background:rgba(255,255,255,.1);color:#fff}
+    .nav-item.active{background:rgba(245,166,35,.18);color:var(--accent);font-weight:700}
+    .nav-icon{font-size:1rem;width:20px;text-align:center;flex-shrink:0}
+    .sidebar-footer{padding:14px 14px 18px;border-top:1px solid rgba(255,255,255,.08);flex-shrink:0}
+    .sidebar-user{display:flex;align-items:center;gap:10px}
+    .sidebar-user-avatar{width:36px;height:36px;border-radius:50%;background:var(--accent);color:var(--primary);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.88rem;flex-shrink:0;overflow:hidden}
+    .sidebar-user-name{font-size:.82rem;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .sidebar-user-role{font-size:.7rem;color:rgba(255,255,255,.45)}
+    .sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:999}
+    /* Topbar */
+    .menu-toggle{display:none;background:none;border:none;font-size:1.3rem;cursor:pointer;color:var(--primary);padding:6px;border-radius:8px}
+    .topbar-title{flex:1;font-size:1rem;font-weight:700;color:var(--primary)}
+    .topbar-btn{width:38px;height:38px;border:none;background:var(--surface);border-radius:10px;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;transition:var(--transition)}
+    /* Page header */
+    .page-header{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:24px;flex-wrap:wrap}
+    .page-header-left h2{font-size:1.4rem;font-weight:800;color:var(--primary)}
+    .page-header-left p{font-size:.85rem;color:var(--text-muted);margin-top:3px}
+    /* Stats */
+    .stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;margin-bottom:24px}
+    .stat-card{background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;display:flex;align-items:center;gap:14px;box-shadow:var(--shadow);transition:var(--transition);position:relative;overflow:hidden}
+    .stat-card::before{content:'';position:absolute;top:0;left:0;width:4px;height:100%;background:var(--card-accent,var(--primary));border-radius:4px 0 0 4px}
+    .stat-icon{width:48px;height:48px;border-radius:12px;background:var(--card-accent-bg,rgba(26,39,68,.08));display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0}
+    .stat-value{font-size:1.6rem;font-weight:800;color:var(--primary);line-height:1.1}
+    .stat-label{font-size:.78rem;color:var(--text-muted);font-weight:500;margin-top:2px}
+    .stat-change{font-size:.72rem;font-weight:600;margin-top:4px}
+    .stat-change.up{color:var(--accent-2)}.stat-change.down{color:var(--accent-3)}
+    /* Charts */
+    .charts-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px;margin-bottom:24px}
+    .chart-card,.table-card{background:#fff;border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;margin-bottom:20px}
+    .chart-card{padding:20px}
+    .chart-card-title{font-size:.95rem;font-weight:700;color:var(--primary)}
+    .chart-card-sub{font-size:.75rem;color:var(--text-muted);margin-top:2px}
+    .chart-container{position:relative;height:220px}
+    .table-card-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:8px}
+    .table-card-title{font-size:.95rem;font-weight:700;color:var(--primary)}
+    /* Table */
+    .table-overflow{overflow-x:auto;-webkit-overflow-scrolling:touch}
+    .data-table{width:100%;border-collapse:collapse;min-width:500px}
+    .data-table th{background:var(--surface);font-size:.78rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;padding:12px 16px;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap}
+    .data-table td{padding:13px 16px;border-bottom:1px solid var(--border);font-size:.88rem;vertical-align:middle}
+    .data-table tr:last-child td{border-bottom:none}
+    .data-table tbody tr:hover{background:var(--surface)}
+    /* Buttons */
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:9px 18px;border:1.5px solid transparent;border-radius:var(--radius-sm);font-family:'Outfit',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;transition:var(--transition);white-space:nowrap;text-decoration:none;line-height:1.3}
+    .btn-primary{background:var(--primary);color:#fff;border-color:var(--primary)}
+    .btn-primary:hover{background:#243558}
+    .btn-accent{background:var(--accent);color:var(--primary);border-color:var(--accent)}
+    .btn-ghost{background:transparent;color:var(--primary);border-color:var(--border)}
+    .btn-ghost:hover{background:var(--surface)}
+    .btn-success{background:var(--accent-2);color:#fff}
+    .btn-danger{background:var(--accent-3);color:#fff}
+    .btn-sm{padding:6px 12px;font-size:.8rem;border-radius:7px}
+    .btn-full{width:100%}
+    .btn-icon{width:34px;height:34px;padding:0;border-radius:8px}
+    /* Badges */
+    .badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:99px;font-size:.72rem;font-weight:700;white-space:nowrap}
+    .badge-success{background:rgba(39,174,96,.12);color:#1a8a48}
+    .badge-danger{background:rgba(231,76,60,.12);color:#b52d20}
+    .badge-warning{background:rgba(245,166,35,.12);color:#b57a00}
+    .badge-info{background:rgba(41,128,185,.12);color:#1a6090}
+    .badge-neutral{background:var(--surface-2);color:var(--text-muted)}
+    /* Forms */
+    .form-group{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+    .form-group label{font-size:.82rem;font-weight:700;color:var(--text-muted);letter-spacing:.02em}
+    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    input[type=text],input[type=email],input[type=tel],input[type=number],input[type=password],input[type=date],input[type=time],select,textarea{padding:10px 14px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:'Outfit',sans-serif;font-size:.9rem;color:var(--text);background:#fff;transition:var(--transition);width:100%}
+    input:focus,select:focus,textarea:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(26,39,68,.1)}
+    textarea{resize:vertical;min-height:90px}
+    /* Modals */
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);backdrop-filter:blur(4px);z-index:2000;display:flex;align-items:center;justify-content:center;padding:20px}
+    .modal{background:#fff;border-radius:20px;width:100%;max-width:520px;max-height:92vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+    .modal-header{display:flex;align-items:center;justify-content:space-between;padding:20px 22px 16px;border-bottom:1px solid var(--border);position:sticky;top:0;background:#fff;z-index:1}
+    .modal-title{font-size:1rem;font-weight:800;color:var(--primary)}
+    .modal-close{width:32px;height:32px;background:var(--surface);border:none;border-radius:8px;cursor:pointer;font-size:.9rem;display:flex;align-items:center;justify-content:center;color:var(--text-muted)}
+    .modal-body{padding:20px 22px}
+    .modal-footer{padding:14px 22px 20px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:10px}
+    /* Avatars */
+    .avatar-cell{display:flex;align-items:center;gap:10px;min-width:0}
+    .avatar-sm{width:36px;height:36px;border-radius:50%;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.82rem;flex-shrink:0}
+    .avatar-name{font-weight:600;font-size:.88rem}
+    .avatar-sub{font-size:.75rem;color:var(--text-muted)}
+    /* Progress */
+    .progress-bar{height:7px;background:var(--surface-2);border-radius:99px;overflow:hidden;flex:1}
+    .progress-fill{height:100%;border-radius:99px;transition:width .6s ease}
+    /* Toast */
+    .toast-container{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column-reverse;gap:10px;pointer-events:none;max-width:360px}
+    .toast{display:flex;align-items:center;gap:12px;padding:13px 18px;background:#fff;border:1px solid var(--border);border-radius:12px;box-shadow:0 6px 24px rgba(0,0,0,.12);animation:toastIn .3s ease;pointer-events:all;min-width:240px}
+    @keyframes toastIn{from{transform:translateX(40px);opacity:0}to{transform:none;opacity:1}}
+    .toast-icon{font-size:1.1rem;flex-shrink:0}.toast-msg{font-size:.85rem;font-weight:600;flex:1}
+    .toast-success{border-left:4px solid var(--accent-2)}.toast-error{border-left:4px solid var(--accent-3)}.toast-warning{border-left:4px solid var(--accent)}
+    /* Empty state */
+    .empty-state{text-align:center;padding:48px 24px}
+    .empty-state-icon{font-size:3rem;margin-bottom:14px;opacity:.6}
+    .empty-state-title{font-size:1rem;font-weight:700;color:var(--text);margin-bottom:6px}
+    /* WA */
+    .wa-bulk-bar{background:linear-gradient(135deg,#075E54,#128C7E);border-radius:var(--radius);padding:16px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:20px;color:#fff;flex-wrap:wrap}
+    .wa-send-btn{display:inline-flex;align-items:center;gap:6px;padding:9px 16px;background:#25D366;color:#fff;border:none;border-radius:var(--radius-sm);font-family:'Outfit',sans-serif;font-size:.85rem;font-weight:700;cursor:pointer;transition:var(--transition);white-space:nowrap}
+    .wa-fee-btn{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;background:rgba(39,174,96,.12);color:#1a8a48;border:1.5px solid rgba(39,174,96,.25);border-radius:8px;font-family:'Outfit',sans-serif;font-size:.78rem;font-weight:700;cursor:pointer;transition:var(--transition)}
+    /* Info card */
+    .info-card{background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);transition:var(--transition)}
+    .info-card-icon{font-size:2rem;margin-bottom:10px}
+    .info-card-title{font-size:.95rem;font-weight:800;color:var(--primary);margin-bottom:4px}
+    .info-card-sub{font-size:.78rem;color:var(--text-muted);margin-top:3px}
+    /* Tabs */
+    .tab-bar{display:flex;gap:4px;background:var(--surface);padding:4px;border-radius:12px;margin-bottom:20px;flex-wrap:wrap}
+    .tab-item{padding:8px 18px;border:none;border-radius:9px;background:transparent;font-family:'Outfit',sans-serif;font-size:.85rem;font-weight:600;cursor:pointer;color:var(--text-muted);transition:var(--transition)}
+    .tab-item.active{background:var(--primary);color:#fff}
+    /* Announcement */
+    .announcement-item{padding:14px 0;border-bottom:1px solid var(--border)}
+    .announcement-item:last-child{border-bottom:none}
+    .announcement-title{font-weight:700;font-size:.92rem;color:var(--primary);margin-bottom:5px}
+    .announcement-body{font-size:.85rem;color:var(--text-muted);line-height:1.6;margin-bottom:8px}
+    .announcement-meta{display:flex;gap:16px;font-size:.75rem;color:var(--text-light,#9aa5c0)}
+    /* Fee row */
+    .fee-row{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border)}
+    .fee-row-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0}
+    .fee-row-name{font-size:.88rem;font-weight:600}.fee-row-date{font-size:.75rem;color:var(--text-muted)}.fee-row-amount{font-size:.95rem;font-weight:800}
+    /* Search */
+    .search-input-wrap{position:relative}.search-input-wrap input{padding-left:38px;width:220px}
+    .search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:.9rem;color:var(--text-muted);pointer-events:none}
+    /* Upload */
+    .upload-area{border:2px dashed var(--border);border-radius:var(--radius);padding:24px;text-align:center;cursor:pointer;transition:var(--transition);color:var(--text-muted);font-size:.85rem}
+    .upload-area:hover{border-color:var(--primary);background:var(--surface)}
+    .upload-icon{font-size:2rem;margin-bottom:8px}
+    /* Responsive */
+    @media(max-width:900px){
+      .main-content{margin-left:0!important}
+      .menu-toggle{display:flex!important}
+      .sidebar{transform:translateX(-100%)}
+      .sidebar.open{transform:translateX(0);box-shadow:4px 0 30px rgba(0,0,0,.25)}
+      .sidebar-overlay.show{display:block}
+      .page-content{padding:16px}
+    }
+    @media(max-width:600px){
+      .stats-grid{grid-template-columns:1fr 1fr;gap:10px}
+      .stat-value{font-size:1.3rem}
+      .stat-card{padding:14px 12px}
+      .charts-grid{grid-template-columns:1fr}
+      .form-row{grid-template-columns:1fr}
+      .page-header{flex-direction:column;align-items:flex-start}
+      .data-table th,.data-table td{padding:10px 12px;font-size:.8rem}
+      .btn{min-height:42px}
+      input,select,textarea{font-size:16px!important;min-height:44px}
+      .modal-overlay{padding:0;align-items:flex-end}
+      .modal{border-radius:20px 20px 0 0;max-height:92vh;overflow-y:auto}
+      .toast-container{left:12px;right:12px;bottom:16px;max-width:100%}
+    }
+    /* Classroom */
+    .classroom-card{background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);transition:var(--transition)}
+    .classroom-card-type{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);margin-bottom:8px}
+    .classroom-card-title{font-size:.95rem;font-weight:800;color:var(--primary);margin-bottom:6px}
+    .classroom-card-meta{font-size:.8rem;color:var(--text-muted);line-height:1.7}
+    @media print{.sidebar,.topbar,.wa-bulk-bar,.btn,.modal-overlay,.toast-container{display:none!important}.main-content{margin-left:0!important}.page-content{padding:0!important}}
+  </style>
+
+</head>
+<body>
+<div class="app-layout">
+  <div id="layoutSidebar"></div>
+  <div class="main-content">
+    <div id="layoutTopbar"></div>
+    <div class="page-content">
+
+      <div class="page-header">
+        <div class="page-header-left">
+          <h2>📁 Document Storage</h2>
+          <p>Upload and manage student documents</p>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="openModal('uploadDocModal')">📤 Upload Document</button>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-grid" id="docStats" style="margin-bottom:20px;grid-template-columns:repeat(4,1fr)"></div>
+
+      <!-- Filters -->
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px;align-items:center">
+        <div class="search-input-wrap">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="docSearch" placeholder="Search documents..." oninput="renderDocs()">
+        </div>
+        <select id="docTypeFilter" onchange="renderDocs()" style="padding:9px 12px;border:1.5px solid var(--border);border-radius:9px;font-size:0.9rem;font-family:Outfit,sans-serif">
+          <option value="">All Types</option>
+          <option value="id_proof">ID Proof</option>
+          <option value="marksheet">Marksheet</option>
+          <option value="certificate">Certificate</option>
+          <option value="admission_form">Admission Form</option>
+          <option value="other">Other</option>
+        </select>
+        <select id="docStatusFilter" onchange="renderDocs()" style="padding:9px 12px;border:1.5px solid var(--border);border-radius:9px;font-size:0.9rem;font-family:Outfit,sans-serif">
+          <option value="">All Status</option>
+          <option value="pending">Pending Verification</option>
+          <option value="verified">Verified</option>
+          <option value="rejected">Rejected</option>
+        </select>
+      </div>
+
+      <!-- Documents Table -->
+      <div class="table-card">
+        <div class="table-card-header">
+          <div class="table-card-title">📁 Documents</div>
+          <span id="docCount" style="font-size:0.85rem;color:var(--text-muted)"></span>
+        </div>
+        <div class="table-overflow">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Student</th>
+                <th>Document Type</th>
+                <th>Title</th>
+                <th>Uploaded</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="docsTbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Upload Document Modal -->
+<div class="modal-overlay" id="uploadDocModal" style="display:none">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-header">
+      <div class="modal-title">📤 Upload Document</div>
+      <button class="modal-close" onclick="closeModal('uploadDocModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Student *</label>
+        <select id="docStudent">
+          <option value="">-- Select Student --</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Document Type *</label>
+          <select id="docType">
+            <option value="id_proof">ID Proof (Aadhaar, Birth Cert)</option>
+            <option value="marksheet">Marksheet / Report Card</option>
+            <option value="certificate">Certificate</option>
+            <option value="admission_form">Admission Form</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Title *</label>
+          <input type="text" id="docTitle" placeholder="e.g. Aadhaar Card">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Notes (optional)</label>
+        <textarea id="docNotes" rows="2" placeholder="Any additional notes..."></textarea>
+      </div>
+      <div class="form-group">
+        <label>File (optional — link for now)</label>
+        <input type="url" id="docLink" placeholder="https://drive.google.com/... (optional)">
+      </div>
+      <div style="background:var(--surface);border-radius:9px;padding:12px;font-size:0.82rem;color:var(--text-muted)">
+        💡 For Supabase deployment, files will be stored in secure cloud storage. Currently using link-based storage.
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('uploadDocModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="uploadDoc()">📤 Upload</button>
+    </div>
+  </div>
+</div>
+
+<script src="logo_data.js"></script>
+<script src="core.js"></script>
+<script>
+const DOC_TYPE_LABELS = {
+  id_proof:       '🪪 ID Proof',
+  marksheet:      '📄 Marksheet',
+  certificate:    '🏆 Certificate',
+  admission_form: '📝 Admission Form',
+  other:          '📁 Other',
+};
+let currentUser5 = null;
+
+function pageInit() {
+  currentUser5 = Auth.require();
+  if (!currentUser5) return;
+  buildLayout(currentUser5.role, 'Documents');
+  populateStudentDropdown();
+  renderDocStats();
+  renderDocs();
+  Responsive.autoGrid('docStats', { mobile:'1fr 1fr', tablet:'repeat(4,1fr)', desktop:'repeat(4,1fr)' });
+}
+
+function populateStudentDropdown() {
+  const sel = document.getElementById('docStudent');
+  let students = DB.students();
+  // If student, only show their own
+  if (currentUser5.role === 'student') students = students.filter(s => s.id === currentUser5.id);
+  sel.innerHTML = '<option value="">-- Select Student --</option>' +
+    students.map(s => `<option value="${s.id}">${safe(s.name)} (${s.id})</option>`).join('');
+  if (currentUser5.role === 'student') sel.value = currentUser5.id;
+}
+
+function renderDocStats() {
+  const docs = DB.documents();
+  const verified = docs.filter(d=>d.status==='verified').length;
+  const pending  = docs.filter(d=>d.status==='pending').length;
+  const rejected = docs.filter(d=>d.status==='rejected').length;
+
+  document.getElementById('docStats').innerHTML = `
+    <div class="stat-card" style="--card-accent:#1a2744;--card-accent-bg:rgba(26,39,68,0.09)">
+      <div class="stat-icon">📁</div>
+      <div class="stat-content"><div class="stat-value">${docs.length}</div><div class="stat-label">Total Documents</div></div>
+    </div>
+    <div class="stat-card" style="--card-accent:#27ae60;--card-accent-bg:rgba(39,174,96,0.09)">
+      <div class="stat-icon">✅</div>
+      <div class="stat-content"><div class="stat-value">${verified}</div><div class="stat-label">Verified</div></div>
+    </div>
+    <div class="stat-card" style="--card-accent:#f5a623;--card-accent-bg:rgba(245,166,35,0.09)">
+      <div class="stat-icon">⏳</div>
+      <div class="stat-content"><div class="stat-value">${pending}</div><div class="stat-label">Pending</div></div>
+    </div>
+    <div class="stat-card" style="--card-accent:#e74c3c;--card-accent-bg:rgba(231,76,60,0.09)">
+      <div class="stat-icon">❌</div>
+      <div class="stat-content"><div class="stat-value">${rejected}</div><div class="stat-label">Rejected</div></div>
+    </div>
+  `;
+}
+
+function renderDocs() {
+  const q      = (document.getElementById('docSearch').value || '').toLowerCase();
+  const type   = document.getElementById('docTypeFilter').value;
+  const status = document.getElementById('docStatusFilter').value;
+  const user   = currentUser5;
+
+  let docs = DB.documents();
+  if (user.role === 'student') docs = docs.filter(d => d.student_id === user.id);
+  if (user.role === 'parent')  docs = docs.filter(d => d.student_id === user.student_id);
+  if (type)   docs = docs.filter(d => d.doc_type === type);
+  if (status) docs = docs.filter(d => d.status === status);
+  if (q)      docs = docs.filter(d =>
+    d.student_name?.toLowerCase().includes(q) ||
+    d.title?.toLowerCase().includes(q) ||
+    d.student_id?.toLowerCase().includes(q)
+  );
+
+  document.getElementById('docCount').textContent = `${docs.length} documents`;
+
+  const tbody    = document.getElementById('docsTbody');
+  const isAdmin  = user.role === 'admin';
+
+  if (!docs.length) {
+    tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state" style="padding:32px"><div class="empty-state-icon">📁</div><div class="empty-state-title">No documents found</div><p>Upload student documents using the button above</p></div></td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = docs.map(d => {
+    const statusBadge = d.status === 'verified' ? 'badge-success' : d.status === 'rejected' ? 'badge-danger' : 'badge-warning';
+    const statusLabel = d.status === 'verified' ? '✅ Verified' : d.status === 'rejected' ? '❌ Rejected' : '⏳ Pending';
+    return `<tr>
+      <td>
+        <div class="avatar-cell">
+          ${avatarHTML(d.student_name || '?')}
+          <div><div class="avatar-name">${safe(d.student_name || 'Unknown')}</div><div class="avatar-sub">${d.student_id}</div></div>
+        </div>
+      </td>
+      <td>${DOC_TYPE_LABELS[d.doc_type] || '📁 Other'}</td>
+      <td>
+        <div style="font-weight:600">${safe(d.title)}</div>
+        ${d.notes ? `<div style="font-size:0.75rem;color:var(--text-muted)">${safe(d.notes)}</div>` : ''}
+      </td>
+      <td style="font-size:0.82rem">${fmtDate(d.uploaded_at)}</td>
+      <td><span class="badge ${statusBadge}">${statusLabel}</span></td>
+      <td>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          ${d.link ? `<a href="${safe(d.link)}" target="_blank" class="btn btn-info btn-sm">📥 View</a>` : ''}
+          ${isAdmin ? `
+            <button class="btn btn-success btn-sm btn-icon" onclick="verifyDoc('${d.id}','verified')" title="Verify">✅</button>
+            <button class="btn btn-ghost btn-sm btn-icon" onclick="verifyDoc('${d.id}','rejected')" title="Reject">❌</button>
+            <button class="btn btn-danger btn-sm btn-icon" onclick="deleteDoc('${d.id}')">🗑️</button>
+          ` : ''}
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function uploadDoc() {
+  const studentId = document.getElementById('docStudent').value;
+  const docType   = document.getElementById('docType').value;
+  const title     = cleanInput(document.getElementById('docTitle').value);
+  const notes     = cleanInput(document.getElementById('docNotes').value);
+  const link      = cleanInput(document.getElementById('docLink').value);
+
+  if (!studentId || !title) { toast('Please select student and enter title', 'warning'); return; }
+
+  const student = DB.students().find(s => s.id === studentId);
+  const docs    = DB.documents();
+  docs.unshift({
+    id:           DB.newId('DOC'),
+    student_id:   studentId,
+    student_name: student?.name || 'Unknown',
+    doc_type:     docType, title, notes, link,
+    status:       'pending',
+    uploaded_by:  currentUser5.name,
+    uploaded_at:  new Date().toISOString(),
+  });
+  DB.saveDocuments(docs);
+  closeModal('uploadDocModal');
+  renderDocStats();
+  renderDocs();
+  toast('Document uploaded!', 'success');
+  document.getElementById('docTitle').value = '';
+  document.getElementById('docNotes').value = '';
+  document.getElementById('docLink').value  = '';
+}
+
+function verifyDoc(id, status) {
+  const docs = DB.documents();
+  const idx  = docs.findIndex(d => d.id === id);
+  if (idx < 0) return;
+  docs[idx].status      = status;
+  docs[idx].verified_by = currentUser5.name;
+  docs[idx].verified_at = new Date().toISOString();
+  DB.saveDocuments(docs);
+  renderDocStats();
+  renderDocs();
+  toast(`Document ${status}!`, status === 'verified' ? 'success' : 'warning');
+}
+
+function deleteDoc(id) {
+  confirm2('Delete this document?', () => {
+    DB.saveDocuments(DB.documents().filter(d => d.id !== id));
+    renderDocStats();
+    renderDocs();
+    toast('Document deleted', 'error');
+  });
+}
+</script>
+<script>
+// Remove loader after page renders
+(function() {
+  function removeLoader() {
+    var l = document.getElementById('page-loader');
+    if (l) { l.style.opacity = '0'; setTimeout(function(){ l.remove(); }, 300); }
+  }
+  window.addEventListener('load', removeLoader);
+  setTimeout(removeLoader, 2000); // fallback
+})();
+</script>
+</body>
+</html>

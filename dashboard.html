@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Admin Dashboard – M.A. SR. SEC. SCHOOL ERP</title>
+<link rel="stylesheet" href="style.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+<div class="app">
+  <div id="sidebar"></div>
+  <div class="main">
+    <div id="topbar"></div>
+    <div class="page">
+
+      <div class="ph">
+        <div><h2>📊 Admin Dashboard</h2><p id="welcome">Loading...</p></div>
+        <div style="display:flex;gap:9px;flex-wrap:wrap">
+          <button class="btn btn-g btn-sm" onclick="location.href='students.html'">+ Student</button>
+          <button class="btn btn-a btn-sm" onclick="openModal('ann-modal')">📢 Announce</button>
+        </div>
+      </div>
+      <div class="stats" id="stats"></div>
+      <!-- AI Insights -->
+      <div class="card" id="ai-card" style="background:linear-gradient(135deg,#1a2744,#243558);border:none;margin-bottom:22px">
+        <div class="card-hd" style="border-color:rgba(255,255,255,.1)">
+          <div class="card-title" style="color:#fff">🤖 AI Insights — Students Needing Attention</div>
+          <button class="btn btn-sm" style="background:rgba(255,255,255,.14);color:#fff;border:none" onclick="renderInsights()">🔄</button>
+        </div>
+        <div style="padding:14px 18px" id="insights"><div style="text-align:center;opacity:.55;padding:16px;color:#fff;font-size:.85rem">Add students to see insights</div></div>
+      </div>
+      <div class="charts">
+        <div class="chart-card"><div style="font-weight:700;margin-bottom:12px;color:var(--p);font-size:.9rem">💰 Fee Overview</div><div class="chart-wrap"><canvas id="c-fees"></canvas></div></div>
+        <div class="chart-card"><div style="font-weight:700;margin-bottom:12px;color:var(--p);font-size:.9rem">📋 Attendance by Class</div><div class="chart-wrap"><canvas id="c-att"></canvas></div></div>
+        <div class="chart-card"><div style="font-weight:700;margin-bottom:12px;color:var(--p);font-size:.9rem">🎓 Students by Class</div><div class="chart-wrap"><canvas id="c-stu"></canvas></div></div>
+        <div class="chart-card"><div style="font-weight:700;margin-bottom:12px;color:var(--p);font-size:.9rem">📊 Fee Status</div><div class="chart-wrap"><canvas id="c-fst"></canvas></div></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:20px" id="trow">
+        <div class="card">
+          <div class="card-hd"><div class="card-title">🎓 Recent Students</div><a href="students.html" class="btn btn-g btn-sm">View All</a></div>
+          <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Student</th><th>Class</th><th>Status</th></tr></thead><tbody id="stu-body"></tbody></table></div>
+        </div>
+        <div class="card">
+          <div class="card-hd"><div class="card-title">💰 Fee Status</div><a href="fees.html" class="btn btn-g btn-sm">Manage</a></div>
+          <div id="fee-list"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-hd"><div class="card-title">📢 Announcements</div><button class="btn btn-a btn-sm" onclick="openModal('ann-modal')">+ New</button></div>
+        <div style="padding:14px 18px" id="ann-list"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="ann-modal" style="display:none">
+  <div class="modal">
+    <div class="modal-hd"><div class="modal-title">📢 New Announcement</div><button class="modal-x" onclick="closeModal('ann-modal')">✕</button></div>
+    <div class="modal-body">
+      <div class="fg"><label>Title *</label><input type="text" id="a-title" placeholder="Announcement title" maxlength="200"></div>
+      <div class="fg"><label>Message *</label><textarea id="a-body" placeholder="Write your message..." maxlength="2000"></textarea></div>
+      <div class="fr">
+        <div class="fg"><label>Send To</label><select id="a-to"><option>All Students</option><option>All Teachers</option><option>All Parents</option><option>Everyone</option></select></div>
+        <div class="fg"><label>Priority</label><select id="a-pri"><option value="normal">Normal</option><option value="high">High</option><option value="urgent">🔴 Urgent</option></select></div>
+      </div>
+    </div>
+    <div class="modal-ft">
+      <button class="btn btn-g" onclick="closeModal('ann-modal')">Cancel</button>
+      <button class="btn btn-a" onclick="postAnn()">📢 Post</button>
+    </div>
+  </div>
+</div>
+<script src="logo_data.js"></script>
+<script src="core.js"></script>
+<script>
+
+var charts={};
+function pageInit(){
+  const u=Auth.require('admin'); if(!u) return;
+  buildLayout('admin','Dashboard');
+  const h=new Date().getHours(),g=h<12?'Good morning':h<17?'Good afternoon':'Good evening';
+  document.getElementById('welcome').textContent=g+', '+u.name+'! Here\'s your school overview.';
+  renderStats(); renderCharts(); renderStudents(); renderFees(); renderAnns(); renderInsights();
+  const tr=document.getElementById('trow');
+  function rsz(){tr.style.gridTemplateColumns=window.innerWidth<700?'1fr':'1fr 1fr';}
+  window.addEventListener('resize',rsz);rsz();
+}
+function renderStats(){
+  const stu=DB.students(),tch=DB.teachers(),fees=DB.fees(),att=DB.attendance();
+  const paid=fees.reduce((s,f)=>s+(f.paid||0),0),pend=fees.reduce((s,f)=>s+(f.due||0),0);
+  const av=Object.values(att);
+  const avgAtt=av.length?Math.round(av.reduce((a,b)=>a+b.percentage,0)/av.length):0;
+  document.getElementById('stats').innerHTML=`
+    <div class="stat" style="--sc:#1a2744;--sb:rgba(26,39,68,.09)"><div class="stat-ico">🎓</div><div><div class="stat-v" id="sv1">0</div><div class="stat-l">Students</div></div></div>
+    <div class="stat" style="--sc:#27ae60;--sb:rgba(39,174,96,.09)"><div class="stat-ico">👨‍🏫</div><div><div class="stat-v" id="sv2">0</div><div class="stat-l">Teachers</div></div></div>
+    <div class="stat" style="--sc:#f5a623;--sb:rgba(245,166,35,.09)"><div class="stat-ico">💰</div><div><div class="stat-v">${money(paid)}</div><div class="stat-l">Fees Collected</div></div></div>
+    <div class="stat" style="--sc:#e74c3c;--sb:rgba(231,76,60,.09)"><div class="stat-ico">⏳</div><div><div class="stat-v">${money(pend)}</div><div class="stat-l">Pending Fees</div></div></div>
+    <div class="stat" style="--sc:#8e44ad;--sb:rgba(142,68,173,.09)"><div class="stat-ico">📋</div><div><div class="stat-v">${avgAtt}%</div><div class="stat-l">Avg Attendance</div></div></div>
+    <div class="stat" style="--sc:#2980b9;--sb:rgba(41,128,185,.09)"><div class="stat-ico">📚</div><div><div class="stat-v">${DB.books().length}</div><div class="stat-l">Books</div></div></div>`;
+  counter(document.getElementById('sv1'),stu.length);
+  counter(document.getElementById('sv2'),tch.length);
+}
+function renderCharts(){
+  const fees=DB.fees(),stu=DB.students(),att=DB.attendance();
+  const paid=fees.reduce((s,f)=>s+(f.paid||0),0),pend=fees.reduce((s,f)=>s+(f.due||0),0);
+  if(charts.fees) charts.fees.destroy();
+  charts.fees=donutChart(document.getElementById('c-fees').getContext('2d'),['Paid','Pending'],[paid,pend],['#27ae60','#e74c3c']);
+  const cls={};
+  stu.forEach(s=>{ if(!cls['Cls '+s.class]) cls['Cls '+s.class]=[]; const a=att[s.id]; if(a) cls['Cls '+s.class].push(a.percentage); });
+  const clKeys=Object.keys(cls).sort();
+  if(charts.att) charts.att.destroy();
+  charts.att=barChart(document.getElementById('c-att').getContext('2d'),clKeys.length?clKeys:['No data'],[{label:'Attendance %',data:clKeys.map(k=>cls[k].length?Math.round(cls[k].reduce((a,b)=>a+b,0)/cls[k].length):0),backgroundColor:'#1a2744',borderRadius:5}]);
+  const byC={};stu.forEach(s=>{byC['Cls '+s.class]=(byC['Cls '+s.class]||0)+1;});
+  if(charts.stu) charts.stu.destroy();
+  if(Object.keys(byC).length) charts.stu=donutChart(document.getElementById('c-stu').getContext('2d'),Object.keys(byC),Object.values(byC),['#1a2744','#27ae60','#f5a623','#e74c3c','#8e44ad','#2980b9']);
+  const fp=fees.filter(f=>f.status==='paid').length,fpa=fees.filter(f=>f.status==='partial').length,fpe=fees.filter(f=>f.status==='pending').length;
+  if(charts.fst) charts.fst.destroy();
+  if(fees.length) charts.fst=donutChart(document.getElementById('c-fst').getContext('2d'),['Paid','Partial','Pending'],[fp,fpa,fpe],['#27ae60','#f5a623','#e74c3c']);
+}
+function renderStudents(){
+  const stu=DB.students().slice(-6).reverse();
+  const tbody=document.getElementById('stu-body');
+  if(!stu.length){tbody.innerHTML=`<tr><td colspan="3"><div class="empty" style="padding:20px"><div class="empty-ico">🎓</div><div class="empty-title">No students yet</div></div></td></tr>`;return;}
+  tbody.innerHTML=stu.map(s=>`<tr>
+    <td><div class="av-cell">${avatarHTML(s.name)}<div><div class="av-name">${safe(s.name)}</div><div class="av-sub">${s.id}</div></div></div></td>
+    <td>Cls ${s.class}${s.section?'-'+s.section:''}</td>
+    <td><span class="badge badge-${s.status==='active'?'success':'neutral'}">${s.status}</span></td>
+  </tr>`).join('');
+}
+function renderFees(){
+  const fees=DB.fees().slice(0,6);
+  const el=document.getElementById('fee-list');
+  if(!fees.length){el.innerHTML=`<div class="empty" style="padding:28px"><div class="empty-ico">💰</div><div class="empty-title">No fee records</div></div>`;return;}
+  el.innerHTML=fees.map(f=>{
+    const c=f.status==='paid'?'#27ae60':f.status==='partial'?'#f5a623':'#e74c3c',ic=f.status==='paid'?'✅':f.status==='partial'?'⚡':'❌';
+    return `<div class="fee-row"><div class="fee-ico" style="background:${c}20;color:${c}">${ic}</div><div style="flex:1"><div style="font-weight:600;font-size:.86rem">${safe(f.student_name||'')}</div><div style="font-size:.73rem;color:var(--mut)">${safe(f.month||'')}</div></div><div style="font-weight:800;font-size:.9rem;color:${c}">${money(f.paid)}</div></div>`;
+  }).join('');
+}
+function renderAnns(){
+  const list=DB.announcements();
+  const el=document.getElementById('ann-list');
+  if(!list.length){el.innerHTML=`<div class="empty"><div class="empty-ico">📢</div><div class="empty-title">No announcements yet</div></div>`;return;}
+  el.innerHTML=list.map(a=>`<div class="ann-item">
+    <div class="ann-title">${safe(a.title)} ${a.priority==='urgent'?'🔴':''}</div>
+    <div class="ann-body">${safe(a.body)}</div>
+    <div class="ann-meta"><span>📅 ${safe(a.date||'')}</span><span>👤 ${safe(a.by||'Admin')}</span>
+      <button class="btn btn-sm" style="padding:2px 8px;min-height:auto;font-size:.7rem;background:none;border:none;color:var(--r);cursor:pointer" onclick="delAnn('${a.id}')">🗑️</button>
+    </div>
+  </div>`).join('');
+}
+function postAnn(){
+  const title=cleanInput(document.getElementById('a-title').value);
+  const body=cleanInput(document.getElementById('a-body').value);
+  if(!title||!body){toast('Fill title and message','warning');return;}
+  const list=DB.announcements();
+  list.unshift({id:'a'+Date.now(),title,body,to:document.getElementById('a-to').value,priority:document.getElementById('a-pri').value,date:new Date().toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}),by:Auth.getUser()?.name||'Admin'});
+  DB.saveAnnouncements(list);
+  closeModal('ann-modal');renderAnns();toast('Announcement posted!','success');
+  document.getElementById('a-title').value='';document.getElementById('a-body').value='';
+}
+function delAnn(id){confirm2('Delete this announcement?',()=>{DB.saveAnnouncements(DB.announcements().filter(a=>a.id!==id));renderAnns();toast('Deleted','error');});}
+function renderInsights(){
+  const stu=DB.students(),att=DB.attendance(),fees=DB.fees();
+  if(!stu.length) return;
+  const alerts=[];
+  stu.forEach(s=>{
+    const a=att[s.id],f=fees.filter(x=>x.student_id===s.id&&x.status!=='paid');
+    if(a&&a.percentage<75) alerts.push({name:s.name,cls:s.class,msg:'Attendance '+a.percentage+'% — below 75%',color:'#e74c3c',ico:'📋'});
+    if(f.length) alerts.push({name:s.name,cls:s.class,msg:f.length+' pending fee payment(s)',color:'#f5a623',ico:'💰'});
+  });
+  const el=document.getElementById('insights');
+  if(!alerts.length){el.innerHTML=`<div style="text-align:center;opacity:.6;padding:14px;color:#fff;font-size:.84rem">✅ All students are on track!</div>`;return;}
+  el.innerHTML=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px">`+alerts.slice(0,8).map(a=>`
+    <div style="background:rgba(255,255,255,.09);border-radius:10px;padding:12px;border-left:3px solid ${a.color}">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span>${a.ico}</span><div style="font-weight:700;font-size:.85rem;color:#fff">${safe(a.name)}</div><div style="font-size:.72rem;color:rgba(255,255,255,.5)">Cls ${a.cls}</div></div>
+      <div style="font-size:.78rem;color:rgba(255,255,255,.75)">${safe(a.msg)}</div>
+    </div>`).join('')+'</div>';
+}
+pageInit();
+
+</script>
+</body>
+</html>
